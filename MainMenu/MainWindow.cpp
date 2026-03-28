@@ -24,6 +24,9 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_LogInButton_clicked()
 {
+
+    ui->LogInButton->setEnabled(false);
+    
     DisableLabels();
 
     QString LoginText = ui->LoginLine->text();
@@ -44,6 +47,7 @@ void MainWindow::on_LogInButton_clicked()
         {
             EnableWrongPassword();
         }
+        ui->LogInButton->setEnabled(true);
         return;
     }
 
