@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>Resources/Fonts/Merriweather.ttf</file>
+        <file>Resources/Icon/gear.png</file>
+    </qresource>
+</RCC>
