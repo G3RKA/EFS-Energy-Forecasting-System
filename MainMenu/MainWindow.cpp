@@ -67,6 +67,8 @@ void MainWindow::on_LogInButton_clicked()
 
     ui->PageWidget->setCurrentIndex(1);
     */
+
+    ui->LogInButton->setEnabled(true);
 }
 
 void MainWindow::on_RecoveryButton_clicked()

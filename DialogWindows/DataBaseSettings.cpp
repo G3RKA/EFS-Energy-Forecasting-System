@@ -3,6 +3,10 @@
 
 #include "DataBaseUserSettings.h"
 
+#include <QIntValidator>
+#include <QRegularExpression>
+#include <QRegularExpressionValidator>
+
 DataBaseSettings::DataBaseSettings(QWidget *parent)
     : QDialog(parent)
     , ui(new Ui::DataBaseSettings)
@@ -12,6 +16,8 @@ DataBaseSettings::DataBaseSettings(QWidget *parent)
     setWindowFlags(Qt::WindowTitleHint | Qt::CustomizeWindowHint);
 
     SetupDBStatus();
+    SetupInputConstraints();
+    
     ui->ErrorLabel->setVisible(false);
 
     ui->ConnectButton->setDisabled(true);
@@ -39,7 +45,30 @@ void DataBaseSettings::on_ConnectButton_clicked()
 
 void DataBaseSettings::ConnectionDataChanged()
 {
-    ui->ConnectButton->setEnabled(not(ui->HostEdit->text().isEmpty() or ui->PortEdit->text().isEmpty() or ui->NameEdit->text().isEmpty()));
+    auto lineAcceptable = [](QLineEdit *edit) {
+        if (edit->text().isEmpty())
+            return false;
+        int pos = 0;
+        QString t = edit->text();
+        return edit->validator()->validate(t, pos) == QValidator::Acceptable;
+    };
+
+    ui->ConnectButton->setEnabled(lineAcceptable(ui->HostEdit) && lineAcceptable(ui->PortEdit)
+                                  && lineAcceptable(ui->NameEdit));
+}
+
+void DataBaseSettings::SetupInputConstraints()
+{
+    ui->HostEdit->setMaxLength(255);
+    const QRegularExpression hostChars(R"(^[a-zA-Z0-9.\-_\[\]:]*$)");
+    ui->HostEdit->setValidator(new QRegularExpressionValidator(hostChars, ui->HostEdit));
+
+    ui->PortEdit->setMaxLength(5);
+    ui->PortEdit->setValidator(new QIntValidator(1, 65535, ui->PortEdit));
+
+    ui->NameEdit->setMaxLength(63);
+    const QRegularExpression dbName(R"(^[a-zA-Z_][a-zA-Z0-9_]$)");
+    ui->NameEdit->setValidator(new QRegularExpressionValidator(dbName, ui->NameEdit));
 }
 
 void DataBaseSettings::SetupDBStatus()

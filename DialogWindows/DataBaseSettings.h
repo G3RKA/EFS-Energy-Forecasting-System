@@ -24,6 +24,7 @@ private slots:
 
 private:
     void SetupDBStatus();
+    void SetupInputConstraints();
 
     Ui::DataBaseSettings *ui;
 };
