@@ -1,6 +1,8 @@
 #include "MainWindow.h"
 #include "UI/ui_MainWindow.h"
 
+#include <QLineEdit>
+
 #include "AppConfig.h"
 #include "AdminMenu.h"
 #include "AnalystMenu.h"
@@ -11,6 +13,8 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    ui->PasswordLine->setEchoMode(QLineEdit::Password);
 
     DisableLabels();
     ui->PageWidget->setCurrentIndex(0);

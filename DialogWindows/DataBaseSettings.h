@@ -25,6 +25,9 @@ private slots:
 private:
     void SetupDBStatus();
     void SetupInputConstraints();
+    QString GetDatabaseSettingsPath();
+    void SaveDatabaseConnectionSettings();
+    void TryConnectToMysql();
 
     Ui::DataBaseSettings *ui;
 };

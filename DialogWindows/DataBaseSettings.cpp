@@ -6,6 +6,12 @@
 #include <QIntValidator>
 #include <QRegularExpression>
 #include <QRegularExpressionValidator>
+#include <QDebug>
+#include <QDir>
+#include <QSettings>
+#include <QSqlDatabase>
+#include <QSqlError>
+#include <QStandardPaths>
 
 DataBaseSettings::DataBaseSettings(QWidget *parent)
     : QDialog(parent)
@@ -39,8 +45,72 @@ void DataBaseSettings::on_CloseButton_clicked()
 
 void DataBaseSettings::on_ConnectButton_clicked()
 {
+    ui->ConnectButton->setDisabled(true);
+    SaveDatabaseConnectionSettings();
+    TryConnectToMysql();
+
     //DataBaseUserSettings Menu;
     //Menu.exec();
+    ui->ConnectButton->setDisabled(false);
+}
+
+QString DataBaseSettings::GetDatabaseSettingsPath()
+{
+    QString DataRoot = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
+    QDir().mkpath(DataRoot);
+    return QDir(DataRoot).filePath("Settings.ini");
+}
+
+void DataBaseSettings::SaveDatabaseConnectionSettings()
+{
+    QSettings settings(GetDatabaseSettingsPath(), QSettings::IniFormat);
+        settings.beginGroup("DataBase");
+            settings.setValue("Host", ui->HostEdit->text());
+            settings.setValue("Port", ui->PortEdit->text());
+            settings.setValue("Name", ui->NameEdit->text());
+        settings.endGroup();
+    settings.sync();
+}
+
+void DataBaseSettings::TryConnectToMysql()
+{
+    static const QString kConnName = "EFS_DataBase";
+
+    QString driver;
+    if (QSqlDatabase::isDriverAvailable("QMYSQL"))
+    {
+        driver = "QMYSQL";
+    }
+
+    if (driver.isEmpty()) {
+        qDebug() << "MySQL: драйвер QMYSQL не найден."
+                 << "Доступные драйверы:" << QSqlDatabase::drivers();
+        return;
+    }
+
+    if (QSqlDatabase::contains(kConnName)) {
+        {
+            QSqlDatabase existing = QSqlDatabase::database(kConnName);
+            existing.close();
+        }
+        QSqlDatabase::removeDatabase(kConnName);
+    }
+
+    {
+        QSqlDatabase db = QSqlDatabase::addDatabase(driver, kConnName);
+        db.setHostName(ui->HostEdit->text());
+        db.setPort(ui->PortEdit->text().toInt());
+        db.setDatabaseName(ui->NameEdit->text());
+        if (db.open()) {
+            qDebug() << "MySQL: подключение успешно;"
+                     << "хост:" << db.hostName() << "порт:" << db.port() << "БД:" << db.databaseName();
+            db.close();
+        } else {
+            qDebug() << "MySQL: подключение не удалось:" << db.lastError().text();
+        }
+    }
+
+    QSqlDatabase::removeDatabase(kConnName);
 }
 
 void DataBaseSettings::ConnectionDataChanged()
@@ -60,14 +130,14 @@ void DataBaseSettings::ConnectionDataChanged()
 void DataBaseSettings::SetupInputConstraints()
 {
     ui->HostEdit->setMaxLength(255);
-    const QRegularExpression hostChars(R"(^[a-zA-Z0-9.\-_\[\]:]*$)");
+    const QRegularExpression hostChars(R"(^[a-zA-Z0-9._]*$)");
     ui->HostEdit->setValidator(new QRegularExpressionValidator(hostChars, ui->HostEdit));
 
     ui->PortEdit->setMaxLength(5);
     ui->PortEdit->setValidator(new QIntValidator(1, 65535, ui->PortEdit));
 
     ui->NameEdit->setMaxLength(63);
-    const QRegularExpression dbName(R"(^[a-zA-Z_][a-zA-Z0-9_]$)");
+    const QRegularExpression dbName(R"(^[a-zA-Z_][a-zA-Z0-9_]*$)");
     ui->NameEdit->setValidator(new QRegularExpressionValidator(dbName, ui->NameEdit));
 }
 
