@@ -235,6 +235,11 @@ QPushButton:pressed {
                   <height>40</height>
                  </size>
                 </property>
+                <property name="font">
+                 <font>
+                  <pointsize>8</pointsize>
+                 </font>
+                </property>
                </widget>
               </item>
              </layout>

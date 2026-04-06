@@ -15,10 +15,16 @@ public:
     explicit DataBaseUserSettings(QWidget *parent = nullptr);
     ~DataBaseUserSettings();
 
+signals:
+    void ConnectRequested(const QString& user, const QString& password);
+
 private slots:
+    void on_ConnectButton_clicked();
     void on_CloseButton_clicked();
 
 private:
+    void SetupDBStatus();
+
     Ui::DataBaseUserSettings *ui;
 };
 

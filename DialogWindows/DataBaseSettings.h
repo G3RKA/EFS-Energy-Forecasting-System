@@ -17,17 +17,17 @@ public:
 
 private slots:
     void on_CloseButton_clicked();
-
     void on_ConnectButton_clicked();
-
     void ConnectionDataChanged();
+    void OnDatabaseUserSubmitted(const QString& user, const QString& password);
 
 private:
     void SetupDBStatus();
+    void UpdateDBState();
     void SetupInputConstraints();
-    QString GetDatabaseSettingsPath();
     void SaveDatabaseConnectionSettings();
-    void TryConnectToMysql();
+    bool TryConnectToMysql();
+    bool TryConnectToMysqlWithUser(const QString& user, const QString& password);
 
     Ui::DataBaseSettings *ui;
 };
