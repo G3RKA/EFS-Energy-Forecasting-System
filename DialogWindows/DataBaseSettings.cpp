@@ -51,9 +51,18 @@ void DataBaseSettings::on_ConnectButton_clicked()
     SaveDatabaseConnectionSettings();
     if (TryConnectToMysql())
     {
+        UpdateDBState();
+
         DataBaseUserSettings menu;
         connect(&menu, &DataBaseUserSettings::ConnectRequested,
                 this, &DataBaseSettings::OnDatabaseUserSubmitted);
+
+        connect( this, &DataBaseSettings::CloseUserConnection,
+            &menu, &DataBaseUserSettings::OnCloseUserConnection);        
+
+        connect( this, &DataBaseSettings::LoginError,
+            &menu, &DataBaseUserSettings::OnLoginError);        
+
         menu.exec();
     }
     ui->ConnectButton->setDisabled(false);
@@ -70,8 +79,8 @@ void DataBaseSettings::ConnectionDataChanged()
         return edit->validator()->validate(t, pos) == QValidator::Acceptable;
     };
 
-    ui->ConnectButton->setEnabled(lineAcceptable(ui->HostEdit) && lineAcceptable(ui->PortEdit)
-                                  && lineAcceptable(ui->NameEdit));
+    ui->ConnectButton->setEnabled(lineAcceptable(ui->HostEdit) and lineAcceptable(ui->PortEdit)
+                                  and lineAcceptable(ui->NameEdit));
 }
 
 void DataBaseSettings::OnDatabaseUserSubmitted(const QString& user, const QString& password)
@@ -83,9 +92,12 @@ void DataBaseSettings::OnDatabaseUserSubmitted(const QString& user, const QStrin
         settings.endGroup();
     settings.sync();
 
-    if (TryConnectToMysqlWithUser(user, password))
+    bool success = TryConnectToMysqlWithUser(user, password);
+    UpdateDBState();
+    if (success)
     {
-        UpdateDBState();
+        ui->ErrorLabel->setVisible(false);
+        emit CloseUserConnection();
     }
 }
 
@@ -101,7 +113,14 @@ void DataBaseSettings::SetupDBStatus()
 
 void DataBaseSettings::UpdateDBState()
 {
-    //
+    const QString connName = AppConfig::DatabaseName;
+    bool connected = false;
+    if (QSqlDatabase::contains(connName)) {
+        QSqlDatabase db = QSqlDatabase::database(connName);
+        connected = db.isValid() && db.isOpen();
+    }
+    ui->StatusInfoLabel->setText(connected ? QStringLiteral("ПОДКЛЮЧЕНО")
+                                             : QStringLiteral("ОТКЛЮЧЕНО"));
 }
 
 void DataBaseSettings::SetupInputConstraints()
@@ -161,17 +180,18 @@ bool DataBaseSettings::TryConnectToMysql()
             const QString code = err.nativeErrorCode();
             qDebug() << "MySQL:" << err.text() << "nativeErrorCode:" << code;
 
-            if (code == "2002" || code == "2003") {
-                // CR_CONN_HOST_ERROR / CR_CONNECTION_ERROR
+            if (code == "2002" or code == "2003" or code == "2005") {
+                // CR_CONN_HOST_ERROR / CR_CONNECTION_ERROR / CR_UNKNOWN_HOST
                 qDebug() << "MySQL: не удалось подключиться к серверу по адресу"
                          << QStringLiteral("%1:%2").arg(ui->HostEdit->text(), ui->PortEdit->text());
-            } else if (code == "1049") {
-                // ER_BAD_DB_ERROR 
-                qDebug() << "MySQL: не удалось подключиться к базе данных — БД не найдена или имя указано неверно:"
-                         << ui->NameEdit->text();
+
+                ui->ErrorLabel->setVisible(true);
+                ui->ErrorLabel->setText(
+                    QStringLiteral("Не удалось присоединиться к серверу по %1:%2")
+                        .arg(ui->HostEdit->text(), ui->PortEdit->text()));    
             } else if (code == "1044" or code =="1045") {
                 // ER_DBACCESS_DENIED_ERROR 
-                qDebug() << "MySQL: не удалось подключиться к указанной базе данных (нет прав для текущего пользователя).";
+                qDebug() << "MySQL: Попытка присоединения к базе без пользователя.";
                 success = true;
             } 
         }
@@ -207,15 +227,43 @@ bool DataBaseSettings::TryConnectToMysqlWithUser(const QString& user, const QStr
             qDebug() << "MySQL: подключение успешно;"
                      << "user:" << user
                      << "host:" << db.hostName() << "port:" << db.port() << "db:" << db.databaseName();
-            db.close();
+           
             success = true;
         } else {
+            const QSqlError err = db.lastError();
+            const QString code = err.nativeErrorCode();
+
+            if (code == "1049") {
+                // ER_BAD_DB_ERROR 
+                qDebug() << "MySQL: не удалось подключиться к базе данных — БД не найдена:"
+                         << ui->NameEdit->text();
+
+                ui->ErrorLabel->setVisible(true);
+                ui->ErrorLabel->setText(QStringLiteral("Не удалось присоединиться к базе данных %1")
+                .arg(ui->NameEdit->text())); 
+                
+                emit CloseUserConnection();
+            }   
+
+            if (code == "1044" or code =="1045") {
+                // ER_DBACCESS_DENIED_ERROR 
+                qDebug() << "MySQL: Неверный логин или пароль для доступа.";
+                
+                emit LoginError();
+            } 
+
             qDebug() << "MySQL: подключение не удалось:"
                      << db.lastError().text()
                      << "nativeErrorCode:" << db.lastError().nativeErrorCode();
+
+            db.close();
         }
     }
 
-    QSqlDatabase::removeDatabase(kConnName);
+    if (not(success))
+    {
+        QSqlDatabase::removeDatabase(kConnName);
+    }
+
     return success;
 }

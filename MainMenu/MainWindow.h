@@ -19,9 +19,7 @@ public:
 
 private slots:
     void on_LogInButton_clicked();
-
     void on_RecoveryButton_clicked();
-
     void on_LogOutButton_clicked();
 
 private:

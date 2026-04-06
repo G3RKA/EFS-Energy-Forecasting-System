@@ -15,6 +15,11 @@ public:
     explicit DataBaseSettings(QWidget *parent = nullptr);
     ~DataBaseSettings();
 
+
+signals:
+    void CloseUserConnection();
+    void LoginError();
+
 private slots:
     void on_CloseButton_clicked();
     void on_ConnectButton_clicked();

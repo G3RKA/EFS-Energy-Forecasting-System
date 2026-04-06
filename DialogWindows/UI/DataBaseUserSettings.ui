@@ -110,8 +110,8 @@ QPushButton:pressed {
     <widget class="QFrame" name="SettingLayout">
      <property name="minimumSize">
       <size>
-       <width>275</width>
-       <height>225</height>
+       <width>300</width>
+       <height>250</height>
       </size>
      </property>
      <property name="maximumSize">
@@ -178,10 +178,16 @@ QPushButton:pressed {
       </item>
       <item>
        <widget class="QLabel" name="ErrorLabel">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>45</height>
+         </size>
+        </property>
         <property name="maximumSize">
          <size>
           <width>16777215</width>
-          <height>45</height>
+          <height>90</height>
          </size>
         </property>
         <property name="palette">

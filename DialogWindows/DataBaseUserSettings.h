@@ -18,9 +18,15 @@ public:
 signals:
     void ConnectRequested(const QString& user, const QString& password);
 
+public slots:
+    void OnCloseUserConnection();
+    void OnLoginError();
+
+
 private slots:
     void on_ConnectButton_clicked();
     void on_CloseButton_clicked();
+    void ConnectionDataChanged();
 
 private:
     void SetupDBStatus();
