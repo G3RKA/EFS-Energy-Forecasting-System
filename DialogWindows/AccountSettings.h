@@ -17,10 +17,14 @@ public:
 
 private slots:
     void on_ExitButton_clicked();
-
     void on_CreateButton_clicked();
 
 private:
+    void LoadUsersFromDatabase();
+
+    QString FormatLastVisit(const QVariant&);
+    QString FormatRole(const QVariant&);
+
     Ui::AccountSettings *ui;
 };
 

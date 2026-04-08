@@ -1,14 +1,17 @@
 #include "AppConfig.h"
 
-#include <QStandardPaths>
+#include <QDebug>
 #include <QDir>
+#include <QStandardPaths>
+
 #include "bcrypt.hpp"
 
 const QMap<QString, std::string> AppConfig::SuperAdmins = {
     { "EFS_IT_SA", "$2a$12$wAjxaCLLts6Oe3EJ6A2QSeyxErd4sBVMYMpmP1F0yUTY4z.CnFVIe"} // 12345678Hh
 };
 
-const QString AppConfig::DatabaseName = QStringLiteral("MainDataBase");
+const QString AppConfig::DatabaseName = "MainDataBase";
+const QString AppConfig::DatabaseUsersTable = "user";
 
 bool AppConfig::IsSuperAdmin(const QString &Login)
 {

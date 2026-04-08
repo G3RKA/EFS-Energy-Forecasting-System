@@ -8,6 +8,7 @@ class AppConfig
 {
 public:
     static const QString DatabaseName;
+    static const QString DatabaseUsersTable;
 
     static bool IsSuperAdmin(const QString& Login);
     static bool CheckSAPassword(const QString& Login, const QString& Password);

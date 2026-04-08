@@ -51,8 +51,6 @@ void DataBaseSettings::on_ConnectButton_clicked()
     SaveDatabaseConnectionSettings();
     if (TryConnectToMysql())
     {
-        UpdateDBState();
-
         DataBaseUserSettings menu;
         connect(&menu, &DataBaseUserSettings::ConnectRequested,
                 this, &DataBaseSettings::OnDatabaseUserSubmitted);
@@ -65,6 +63,7 @@ void DataBaseSettings::on_ConnectButton_clicked()
 
         menu.exec();
     }
+    UpdateDBState();
     ui->ConnectButton->setDisabled(false);
 }
 
@@ -105,9 +104,9 @@ void DataBaseSettings::SetupDBStatus()
 {
     QSettings settings(AppConfig::GetDatabaseSettingsPath(), QSettings::IniFormat);
     settings.beginGroup(QStringLiteral("DataBase"));
-        ui->HostEdit->setText(settings.value(QStringLiteral("Host")).toString().trimmed());
-        ui->PortEdit->setText(settings.value(QStringLiteral("Port")).toString().trimmed());
-        ui->NameEdit->setText(settings.value(QStringLiteral("Name")).toString().trimmed());
+        ui->HostEdit->setText(settings.value("Host").toString().trimmed());
+        ui->PortEdit->setText(settings.value("Port").toString().trimmed());
+        ui->NameEdit->setText(settings.value("Name").toString().trimmed());
     settings.endGroup();
 }
 
@@ -119,8 +118,7 @@ void DataBaseSettings::UpdateDBState()
         QSqlDatabase db = QSqlDatabase::database(connName);
         connected = db.isValid() && db.isOpen();
     }
-    ui->StatusInfoLabel->setText(connected ? QStringLiteral("ПОДКЛЮЧЕНО")
-                                             : QStringLiteral("ОТКЛЮЧЕНО"));
+    ui->StatusInfoLabel->setText(connected ? "ПОДКЛЮЧЕНО" : "ОТКЛЮЧЕНО");
 }
 
 void DataBaseSettings::SetupInputConstraints()

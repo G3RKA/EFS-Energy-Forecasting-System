@@ -21,6 +21,7 @@ set(CONFIG Config)
 
 set(PROJECT_HEADERS
     ${CONFIG}/AppConfig.h
+    ${CONFIG}/AppDataBase.h
     ${MAINMENU}/MainWindow.h
     ${ROLE}/AdminMenu.h
     ${ROLE}/AnalystMenu.h
@@ -59,6 +60,7 @@ set(PROJECT_FORM
 set(PROJECT_SOURCES
     Main.cpp
     ${CONFIG}/AppConfig.cpp
+    ${CONFIG}/AppDataBase.cpp
     ${MAINMENU}/MainWindow.cpp
     ${ROLE}/AdminMenu.cpp
     ${ROLE}/AnalystMenu.cpp

@@ -1,4 +1,6 @@
+#include "LostConnectionDialog.h"
 #include "MainMenu/MainWindow.h"
+#include "AppDataBase.h"
 
 #include <QFontDatabase>
 #include <QDebug>
@@ -23,13 +25,22 @@ int main(int argc, char *argv[])
 {
 
     QApplication a(argc, argv);
-    QCoreApplication::setOrganizationName(QStringLiteral("EFS_Project"));
-    QCoreApplication::setApplicationName(QStringLiteral("EFS"));
+    QCoreApplication::setOrganizationName("EFS_Project");
+    QCoreApplication::setApplicationName("EFS");
 
     InitAppFont(a);
 
+    bool success = AppDataBase::ConnectToDatabase();
+
     MainWindow w;
     w.show();
+
+    if (not(success))
+    {
+        LostConnectionDialog menu(&w);
+
+        menu.exec();
+    }
 
     return a.exec();
 }

@@ -6,19 +6,19 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>850</width>
+    <width>950</width>
     <height>550</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>850</width>
+    <width>950</width>
     <height>550</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>850</width>
+    <width>950</width>
     <height>550</height>
    </size>
   </property>
@@ -115,7 +115,7 @@ QPushButton:pressed {
      </column>
      <column>
       <property name="text">
-       <string>Количество потребителей</string>
+       <string>Имя</string>
       </property>
      </column>
      <column>
