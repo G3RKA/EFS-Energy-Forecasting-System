@@ -8,6 +8,8 @@ AccountCreate::AccountCreate(QWidget *parent)
     ui->setupUi(this);
 
     setWindowFlags(Qt::WindowTitleHint | Qt::CustomizeWindowHint);
+
+    ui->ErrorLabel->setVisible(false);
 }
 
 AccountCreate::~AccountCreate()
@@ -15,8 +17,12 @@ AccountCreate::~AccountCreate()
     delete ui;
 }
 
+void AccountCreate::on_ConnectButton_clicked()
+{
+
+}
+
 void AccountCreate::on_CloseButton_clicked()
 {
     this->close();
 }
-

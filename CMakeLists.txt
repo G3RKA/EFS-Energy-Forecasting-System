@@ -37,6 +37,8 @@ set(PROJECT_HEADERS
     ${DIALOG}/DataBaseUserSettings.h
     ${DIALOG}/AccountSettings.h
     ${DIALOG}/AccountCreate.h
+    ${DIALOG}/AccountDelete.h
+    ${DIALOG}/AccountEdit.h
 )
 
 set(PROJECT_FORM
@@ -55,6 +57,8 @@ set(PROJECT_FORM
     ${DIALOG}/UI/DataBaseUserSettings.ui
     ${DIALOG}/UI/AccountSettings.ui
     ${DIALOG}/UI/AccountCreate.ui
+    ${DIALOG}/UI/AccountEdit.ui
+    ${DIALOG}/UI/AccountDelete.ui
 )
 
 set(PROJECT_SOURCES
@@ -76,6 +80,9 @@ set(PROJECT_SOURCES
     ${DIALOG}/DataBaseUserSettings.cpp
     ${DIALOG}/AccountSettings.cpp
     ${DIALOG}/AccountCreate.cpp
+    ${DIALOG}/AccountDelete.cpp
+    ${DIALOG}/AccountEdit.cpp
+
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

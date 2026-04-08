@@ -340,6 +340,21 @@
          <pointsize>14</pointsize>
         </font>
        </property>
+       <property name="styleSheet">
+        <string notr="true">QPushButton {
+	background-color: #DAE8FC;
+	border: 2px solid #6C8EBF;
+	border-radius: 10px;
+}
+
+QPushButton:hover {
+	background-color: #c8dcfc;
+}
+
+QPushButton:pressed {
+	background-color: #a7c8fc;
+}</string>
+       </property>
        <property name="text">
         <string>Закрыть журнал</string>
        </property>

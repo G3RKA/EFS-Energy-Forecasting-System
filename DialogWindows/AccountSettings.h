@@ -3,6 +3,10 @@
 
 #include <QDialog>
 
+class QPushButton;
+class QString;
+class QVariant;
+
 namespace Ui {
 class AccountSettings;
 }
@@ -21,6 +25,11 @@ private slots:
 
 private:
     void LoadUsersFromDatabase();
+    void EditUserRowByLogin(const QString& login, const QString& name);
+    void RemoveUserRowByLogin(const QString& login);
+    void SetActionButtonProperties(QPushButton* button, const QString& login);
+    void OnEditButtonClicked(QPushButton* button);
+    void OnDeleteButtonClicked(QPushButton* button);
 
     QString FormatLastVisit(const QVariant&);
     QString FormatRole(const QVariant&);

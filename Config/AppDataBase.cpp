@@ -66,14 +66,8 @@ bool AppDataBase::ConnectToDatabase()
 
 QSqlQuery* AppDataBase::GetAllUsers()
 {
-    if (!QSqlDatabase::contains(AppConfig::DatabaseName)) {
-        qDebug() << "DataBase: нет зарегистрированного подключения к БД";
-        return nullptr;
-    }
-
-    QSqlDatabase db = QSqlDatabase::database(AppConfig::DatabaseName);
-    if (!db.isOpen()) {
-        qDebug() << "DataBase: подключение к БД не открыто";
+    QSqlDatabase db;
+    if (!GetOpenDatabase(db)) {
         return nullptr;
     }
 
@@ -87,4 +81,95 @@ QSqlQuery* AppDataBase::GetAllUsers()
     }
 
     return query;
+}
+
+bool AppDataBase::CreateUser(const QString& login, const QString& name, const QString& role, const QString& password)
+{
+    QSqlDatabase db;
+    if (!GetOpenDatabase(db)) {
+        return false;
+    }
+
+    const QString dbRole = AppConfig::ConvertRoleToDB(role);
+    if (dbRole.isEmpty()) {
+        qDebug() << "DataBase: некорректная роль пользователя:" << role;
+        return false;
+    }
+
+    QSqlQuery query(db);
+    query.prepare(QString("INSERT INTO %1 (Login, Name, Role, Password) VALUES (:login, :name, :role, :password)")
+                      .arg(AppConfig::DatabaseUsersTable));
+    query.bindValue(":login", login);
+    query.bindValue(":name", name);
+    query.bindValue(":role", dbRole);
+    query.bindValue(":password", password);
+
+    if (!query.exec()) {
+        qDebug() << "DataBase: не удалось создать пользователя:" << query.lastError().text();
+        return false;
+    }
+
+    return true;
+}
+
+bool AppDataBase::DeleteUserByLogin(const QString& login)
+{
+    QSqlDatabase db;
+    if (!GetOpenDatabase(db)) {
+        return false;
+    }
+
+    QSqlQuery query(db);
+    query.prepare(QString("DELETE FROM %1 WHERE Login = :login").arg(AppConfig::DatabaseUsersTable));
+    query.bindValue(":login", login);
+
+    if (!query.exec()) {
+        qDebug() << "DataBase: не удалось удалить пользователя:" << query.lastError().text();
+        return false;
+    }
+
+    return true;
+}
+
+bool AppDataBase::UpdateUser(const QString& login, const QString& name, const QString& password)
+{
+    QSqlDatabase db;
+    if (!GetOpenDatabase(db)) {
+        return false;
+    }
+
+    QSqlQuery query(db);
+    if (password.isEmpty()) {
+        query.prepare(QString("UPDATE %1 SET Name = :name WHERE Login = :login").arg(AppConfig::DatabaseUsersTable));
+        query.bindValue(":name", name);
+        query.bindValue(":login", login);
+    } else {
+        query.prepare(QString("UPDATE %1 SET Name = :name, Password = :password WHERE Login = :login").arg(AppConfig::DatabaseUsersTable));
+        query.bindValue(":name", name);
+        query.bindValue(":password", password);
+        query.bindValue(":login", login);
+    }
+
+    if (!query.exec()) {
+        qDebug() << "DataBase: не удалось обновить пользователя:" << query.lastError().text();
+        return false;
+    }
+
+    return true;
+}
+
+bool AppDataBase::GetOpenDatabase(QSqlDatabase& db)
+{
+    if (!QSqlDatabase::contains(AppConfig::DatabaseName)) {
+        qDebug() << "DataBase: нет зарегистрированного подключения к БД";
+        return false;
+    }
+
+    db = QSqlDatabase::database(AppConfig::DatabaseName);
+    if (!db.isOpen()) {
+        qDebug() << "DataBase: подключение к БД не открыто";
+        return false;
+    }
+
+    return true;
 }

@@ -18,6 +18,8 @@ public:
 private slots:
     void on_CloseButton_clicked();
 
+    void on_ConnectButton_clicked();
+
 private:
     Ui::AccountCreate *ui;
 };

@@ -8,11 +8,15 @@ class AppConfig
 {
 public:
     static const QString DatabaseName;
+    static const QString DatabaseAnalystStr;
+    static const QString DatabaseEnergyStr;
     static const QString DatabaseUsersTable;
+    static const QString DatabaseLogsTable;
 
     static bool IsSuperAdmin(const QString& Login);
     static bool CheckSAPassword(const QString& Login, const QString& Password);
     static QString GetDatabaseSettingsPath();
+    static QString ConvertRoleToDB(const QString& role);
 
 private:
     AppConfig() = default;
