@@ -18,7 +18,7 @@ DataBaseSettings::DataBaseSettings(QWidget *parent)
 {
     ui->setupUi(this);
 
-    setWindowFlags(Qt::WindowTitleHint | Qt::CustomizeWindowHint);
+    setWindowFlags(Qt::Dialog | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
 
     SetupDBStatus();
     UpdateDBState();
@@ -84,10 +84,10 @@ void DataBaseSettings::ConnectionDataChanged()
 
 void DataBaseSettings::OnDatabaseUserSubmitted(const QString& user, const QString& password)
 {
-    QSettings settings(AppConfig::GetDatabaseSettingsPath(), QSettings::IniFormat);
-        settings.beginGroup(QStringLiteral("DataBase"));
-            settings.setValue(QStringLiteral("User"), user);
-            settings.setValue(QStringLiteral("Password"), password);
+    QSettings settings(AppConfig::GetSettingsPath(), QSettings::IniFormat);
+        settings.beginGroup("DataBase");
+            settings.setValue("User", user);
+            settings.setValue("Password", password);
         settings.endGroup();
     settings.sync();
 
@@ -102,8 +102,8 @@ void DataBaseSettings::OnDatabaseUserSubmitted(const QString& user, const QStrin
 
 void DataBaseSettings::SetupDBStatus()
 {
-    QSettings settings(AppConfig::GetDatabaseSettingsPath(), QSettings::IniFormat);
-    settings.beginGroup(QStringLiteral("DataBase"));
+    QSettings settings(AppConfig::GetSettingsPath(), QSettings::IniFormat);
+    settings.beginGroup("DataBase");
         ui->HostEdit->setText(settings.value("Host").toString().trimmed());
         ui->PortEdit->setText(settings.value("Port").toString().trimmed());
         ui->NameEdit->setText(settings.value("Name").toString().trimmed());
@@ -137,7 +137,7 @@ void DataBaseSettings::SetupInputConstraints()
 
 void DataBaseSettings::SaveDatabaseConnectionSettings()
 {
-    QSettings settings(AppConfig::GetDatabaseSettingsPath(), QSettings::IniFormat);
+    QSettings settings(AppConfig::GetSettingsPath(), QSettings::IniFormat);
         settings.beginGroup("DataBase");
             settings.setValue("Host", ui->HostEdit->text());
             settings.setValue("Port", ui->PortEdit->text());
@@ -181,11 +181,11 @@ bool DataBaseSettings::TryConnectToMysql()
             if (code == "2002" or code == "2003" or code == "2005") {
                 // CR_CONN_HOST_ERROR / CR_CONNECTION_ERROR / CR_UNKNOWN_HOST
                 qDebug() << "MySQL: не удалось подключиться к серверу по адресу"
-                         << QStringLiteral("%1:%2").arg(ui->HostEdit->text(), ui->PortEdit->text());
+                         << QString("%1:%2").arg(ui->HostEdit->text(), ui->PortEdit->text());
 
                 ui->ErrorLabel->setVisible(true);
                 ui->ErrorLabel->setText(
-                    QStringLiteral("Не удалось присоединиться к серверу по %1:%2")
+                    QString("Не удалось присоединиться к серверу по %1:%2")
                         .arg(ui->HostEdit->text(), ui->PortEdit->text()));    
             } else if (code == "1044" or code =="1045") {
                 // ER_DBACCESS_DENIED_ERROR 
@@ -237,7 +237,7 @@ bool DataBaseSettings::TryConnectToMysqlWithUser(const QString& user, const QStr
                          << ui->NameEdit->text();
 
                 ui->ErrorLabel->setVisible(true);
-                ui->ErrorLabel->setText(QStringLiteral("Не удалось присоединиться к базе данных %1")
+                ui->ErrorLabel->setText(QString("Не удалось присоединиться к базе данных %1")
                 .arg(ui->NameEdit->text())); 
                 
                 emit CloseUserConnection();

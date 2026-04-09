@@ -34,7 +34,7 @@ bool AppConfig::CheckSAPassword(const QString &Login, const QString &Password)
     return BCrypt::validatePassword(Password.toStdString(), SuperAdmins.value(Login));
 }
 
-QString AppConfig::GetDatabaseSettingsPath()
+QString AppConfig::GetSettingsPath()
 {
     QString DataRoot = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
     QDir().mkpath(DataRoot);

@@ -7,7 +7,7 @@ ConsumersMenu::ConsumersMenu(QWidget *parent)
 {
     ui->setupUi(this);
 
-    setWindowFlags(Qt::WindowTitleHint | Qt::CustomizeWindowHint);
+    setWindowFlags(Qt::Dialog | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
 
     ui->ConsumeTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui->ConsumeTable->horizontalHeader()->setDefaultAlignment(Qt::AlignCenter | Qt::Alignment(Qt::TextWordWrap));

@@ -1,5 +1,6 @@
 #include "AppDataBase.h"
 
+#include <QMetaObject>
 #include <QSettings>
 #include <QSqlDatabase>
 #include <QSqlError>
@@ -7,15 +8,23 @@
 
 #include "AppConfig.h"
 
+QObject* AppDataBase::s_connectionLostTarget = nullptr;
+
 AppDataBase::AppDataBase(QObject *parent)
     : QObject{parent}
 {}
+
+void AppDataBase::SetConnectionLostTarget(QObject* mainWindow)
+{
+    s_connectionLostTarget = mainWindow;
+}
+
 
 bool AppDataBase::ConnectToDatabase()
 {
     const QString DatabaseName = AppConfig::DatabaseName;
 
-    QSettings settings(AppConfig::GetDatabaseSettingsPath(), QSettings::IniFormat);
+    QSettings settings(AppConfig::GetSettingsPath(), QSettings::IniFormat);
     settings.beginGroup("DataBase");
     const QString host = settings.value("Host").toString().trimmed();
     const int port = settings.value("Port").toString().trimmed().toInt();
@@ -112,6 +121,26 @@ bool AppDataBase::CreateUser(const QString& login, const QString& name, const QS
     return true;
 }
 
+bool AppDataBase::IsLoginTaken(const QString& login)
+{
+    QSqlDatabase db;
+    if (!GetOpenDatabase(db)) {
+        return false;
+    }
+
+    QSqlQuery query(db);
+    query.prepare(QString("SELECT 1 FROM %1 WHERE Login = :login").arg(AppConfig::DatabaseUsersTable));
+    query.bindValue(":login", login);
+
+    if (!query.exec()) {
+        qDebug() << "DataBase: не удалось проверить уникальность логина:" << query.lastError().text();
+        return false;
+    }
+
+    return query.next();
+}
+
+
 bool AppDataBase::DeleteUserByLogin(const QString& login)
 {
     QSqlDatabase db;
@@ -171,5 +200,22 @@ bool AppDataBase::GetOpenDatabase(QSqlDatabase& db)
         return false;
     }
 
+    QSqlQuery ping(db);
+    if (!ping.exec("SELECT 1")) {
+        qDebug() << "DataBase: пинг сервера не удался:" << ping.lastError().text();
+        if (!ConnectToDatabase()) {
+            qDebug() << "DataBase: не удалось переподключиться к БД";
+            NotifyConnectionLostUi();
+            return false;
+        }
+    }
     return true;
+}
+
+void AppDataBase::NotifyConnectionLostUi()
+{
+    if (!s_connectionLostTarget) {
+        return;
+    }
+    QMetaObject::invokeMethod(s_connectionLostTarget, "BackToAuthMenu", Qt::QueuedConnection);
 }

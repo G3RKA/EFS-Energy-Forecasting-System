@@ -34,7 +34,7 @@ void AccountEdit::on_SaveButton_clicked()
     ui->ErrorLabel->setVisible(false);
 
     const QString name = ui->NameEdit->text().trimmed();
-    const QString pass = ui->PassEdit->text();
+    const QString pass = ui->PassEdit->text().trimmed();
     const bool nameChanged = (name != UserOldName);
 
     if (nameChanged and !IsNameValid(name)) {
@@ -81,8 +81,7 @@ bool AccountEdit::IsPasswordValid(const QString& Password)
 
 bool AccountEdit::IsNameValid(const QString& Name)
 {
-    static const QRegularExpression pattern(
-        QStringLiteral(R"(^[\p{Latin}\p{Cyrillic}]{1,45}$)"),
+    static const QRegularExpression pattern(R"(^[\p{Latin}\p{Cyrillic}]{1,45}$)",
         QRegularExpression::UseUnicodePropertiesOption);
     return pattern.match(Name).hasMatch();
 }

@@ -1,6 +1,9 @@
 #include "MainWindow.h"
 #include "UI/ui_MainWindow.h"
 
+#include "LostConnectionDialog.h"
+
+#include <QDialog>
 #include <QLineEdit>
 
 #include "AppConfig.h"
@@ -118,5 +121,21 @@ void MainWindow::ResetRoleMenu()
         QLayoutItem* Item = ui->RoleLayout->itemAt(0);
         Item->widget()->deleteLater();
     }
+}
+
+void MainWindow::BackToAuthMenu()
+{
+    const QList<QDialog*> dialogs = findChildren<QDialog*>();
+    for (QDialog *dialog : dialogs) {
+        dialog->close();
+    }
+
+    ClearEdits();
+    DisableLabels();
+    ui->PageWidget->setCurrentIndex(0);
+    ResetRoleMenu();
+
+    LostConnectionDialog lostDialog(this);
+    lostDialog.exec();
 }
 

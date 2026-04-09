@@ -15,7 +15,7 @@ public:
 
     static bool IsSuperAdmin(const QString& Login);
     static bool CheckSAPassword(const QString& Login, const QString& Password);
-    static QString GetDatabaseSettingsPath();
+    static QString GetSettingsPath();
     static QString ConvertRoleToDB(const QString& role);
 
 private:

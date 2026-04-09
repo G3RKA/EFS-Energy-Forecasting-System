@@ -11,7 +11,7 @@ DataBaseUserSettings::DataBaseUserSettings(QWidget *parent)
 {
     ui->setupUi(this);
 
-    setWindowFlags(Qt::WindowTitleHint | Qt::CustomizeWindowHint);
+    setWindowFlags(Qt::Dialog | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
     SetupDBStatus();
 
     ui->ErrorLabel->setVisible(false);
@@ -59,9 +59,9 @@ void DataBaseUserSettings::ConnectionDataChanged()
 
 void DataBaseUserSettings::SetupDBStatus()
 {
-    QSettings settings(AppConfig::GetDatabaseSettingsPath(), QSettings::IniFormat);
-    settings.beginGroup(QStringLiteral("DataBase"));
-        ui->LoginEdit->setText(settings.value(QStringLiteral("User")).toString().trimmed());
-        ui->PassEdit->setText(settings.value(QStringLiteral("Password")).toString());
+    QSettings settings(AppConfig::GetSettingsPath(), QSettings::IniFormat);
+    settings.beginGroup("DataBase");
+        ui->LoginEdit->setText(settings.value("User").toString().trimmed());
+        ui->PassEdit->setText(settings.value("Password").toString());
     settings.endGroup();
 }

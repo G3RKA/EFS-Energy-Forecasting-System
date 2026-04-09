@@ -35,25 +35,25 @@ void AdminMenu::on_AuditButton_clicked()
 
 void AdminMenu::on_DataBaseButton_clicked()
 {
-    DataBaseSettings Menu;
+    DataBaseSettings Menu(this);
     Menu.exec();
 }
 
 void AdminMenu::on_AccountsButton_clicked()
 {
-    AccountSettings Menu;
+    AccountSettings Menu(this);
     Menu.exec();
 }
 
 void AdminMenu::on_AuditSetButton_clicked()
 {
-    AuditSettings Menu;
+    AuditSettings Menu(this);
     Menu.exec();
 }
 
 void AdminMenu::on_MoreButton_clicked()
 {
-    AuditMenu Menu;
+    AuditMenu Menu(this);
     Menu.exec();
 }
 

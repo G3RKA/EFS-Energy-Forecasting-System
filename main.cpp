@@ -33,6 +33,7 @@ int main(int argc, char *argv[])
     bool success = AppDataBase::ConnectToDatabase();
 
     MainWindow w;
+    AppDataBase::SetConnectionLostTarget(&w);
     w.show();
 
     if (not(success))
@@ -41,6 +42,7 @@ int main(int argc, char *argv[])
 
         menu.exec();
     }
+
 
     return a.exec();
 }

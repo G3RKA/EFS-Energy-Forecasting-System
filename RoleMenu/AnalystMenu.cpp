@@ -22,13 +22,13 @@ AnalystMenu::~AnalystMenu()
 
 void AnalystMenu::on_DataButton_clicked()
 {
-    DataMenu Menu;
+    DataMenu Menu(this);
     Menu.exec();
 }
 
 void AnalystMenu::on_ConsumeButton_clicked()
 {
-    ConsumersMenu Menu;
+    ConsumersMenu Menu(this);
     Menu.exec();
 }
 

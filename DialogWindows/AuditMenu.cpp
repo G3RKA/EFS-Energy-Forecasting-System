@@ -7,7 +7,7 @@ AuditMenu::AuditMenu(QWidget *parent)
 {
     ui->setupUi(this);
 
-    setWindowFlags(Qt::WindowTitleHint | Qt::CustomizeWindowHint);
+    setWindowFlags(Qt::Dialog | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
 
     ui->AuditTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui->AuditTable->horizontalHeader()->setDefaultAlignment(Qt::AlignCenter | Qt::Alignment(Qt::TextWordWrap));

@@ -14,9 +14,11 @@ class AppDataBase : public QObject
 public:
     explicit AppDataBase(QObject *parent = nullptr);
 
+    static void SetConnectionLostTarget(QObject* mainWindow);
     static bool ConnectToDatabase();
     static QSqlQuery* GetAllUsers();
     static bool CreateUser(const QString& login, const QString& name, const QString& role, const QString& password);
+    static bool IsLoginTaken(const QString& login);
     static bool DeleteUserByLogin(const QString& login);
     static bool UpdateUser(const QString& login, const QString& name, const QString& password);
 
@@ -24,6 +26,9 @@ signals:
 
 private:
     static bool GetOpenDatabase(QSqlDatabase& db);
+    static void NotifyConnectionLostUi();
+
+    static QObject* s_connectionLostTarget;
 };
 
 #endif // APPDATABASE_H

@@ -9,7 +9,7 @@ DataMenu::DataMenu(QWidget *parent)
 {
     ui->setupUi(this);
 
-    setWindowFlags(Qt::WindowTitleHint | Qt::CustomizeWindowHint);
+    setWindowFlags(Qt::Dialog | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
 
     ui->DataTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui->DataTable->horizontalHeader()->setDefaultAlignment(Qt::AlignCenter | Qt::Alignment(Qt::TextWordWrap));

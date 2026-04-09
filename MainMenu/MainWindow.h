@@ -17,6 +17,9 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+public slots:
+    void BackToAuthMenu();
+
 private slots:
     void on_LogInButton_clicked();
     void on_RecoveryButton_clicked();

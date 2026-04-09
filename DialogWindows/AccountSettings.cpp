@@ -25,7 +25,7 @@ AccountSettings::AccountSettings(QWidget *parent)
 {
     ui->setupUi(this);
 
-    setWindowFlags(Qt::WindowTitleHint | Qt::CustomizeWindowHint);
+    setWindowFlags(Qt::Dialog | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
 
     ui->AccountTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui->AccountTable->horizontalHeader()->setDefaultAlignment(Qt::AlignCenter | Qt::Alignment(Qt::TextWordWrap));
@@ -49,6 +49,7 @@ void AccountSettings::on_ExitButton_clicked()
 void AccountSettings::on_CreateButton_clicked()
 {
     AccountCreate Menu;
+        connect(&Menu, &AccountCreate::tableUpdateRequested, this, &AccountSettings::LoadUsersFromDatabase);
     Menu.exec();
 }
 
