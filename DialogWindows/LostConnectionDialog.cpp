@@ -1,8 +1,8 @@
 #include "LostConnectionDialog.h"
 #include "UI/ui_LostConnectionDialog.h"
 
-LostConnectionDialog::LostConnectionDialog(QWidget *parent)
-    : QDialog(parent)
+LostConnectionDialog::LostConnectionDialog(QWidget *Parent)
+    : QDialog(Parent)
     , ui(new Ui::LostConnectionDialog)
 {
     ui->setupUi(this);

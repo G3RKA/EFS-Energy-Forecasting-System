@@ -6,8 +6,11 @@
 #include "AuditSettings.h"
 #include "AuditMenu.h"
 
-AdminMenu::AdminMenu(QWidget *parent)
-    : QWidget(parent)
+#include <QHeaderView>
+#include <QSizePolicy>
+
+AdminMenu::AdminMenu(QWidget *Parent)
+    : QWidget(Parent)
     , ui(new Ui::AdminMenu)
 {
     ui->setupUi(this);
@@ -16,9 +19,9 @@ AdminMenu::AdminMenu(QWidget *parent)
     ui->AuditTable->horizontalHeader()->setDefaultAlignment(Qt::AlignCenter | Qt::Alignment(Qt::TextWordWrap));
     ui->AuditTable->horizontalHeader()->setMinimumHeight(60);
 
-    QSizePolicy sp = ui->AuditFrame->sizePolicy();
-    sp.setRetainSizeWhenHidden(true);
-    ui->AuditFrame->setSizePolicy(sp);
+    QSizePolicy Sp = ui->AuditFrame->sizePolicy();
+    Sp.setRetainSizeWhenHidden(true);
+    ui->AuditFrame->setSizePolicy(Sp);
     ui->AuditFrame->hide();
 
 }

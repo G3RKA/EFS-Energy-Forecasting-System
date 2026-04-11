@@ -1,8 +1,8 @@
 #include "UploadError.h"
 #include "UI/ui_UploadError.h"
 
-UploadError::UploadError(const QString& LineNumber, QWidget *parent)
-    : QDialog(parent)
+UploadError::UploadError(const QString& LineNumber, QWidget *Parent)
+    : QDialog(Parent)
     , ui(new Ui::UploadError)
 {
     ui->setupUi(this);

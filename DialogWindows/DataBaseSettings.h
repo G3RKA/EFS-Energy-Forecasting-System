@@ -12,7 +12,7 @@ class DataBaseSettings : public QDialog
     Q_OBJECT
 
 public:
-    explicit DataBaseSettings(QWidget *parent = nullptr);
+    explicit DataBaseSettings(QWidget *Parent = nullptr);
     ~DataBaseSettings();
 
 
@@ -23,11 +23,11 @@ signals:
 private slots:
     void on_CloseButton_clicked();
     void on_ConnectButton_clicked();
-    void UpdateDBState(bool connected);
+    void UpdateDBState(bool Connected);
     void ConnectionDataChanged();
-    void OnDatabaseUserSubmitted(const QString& user, const QString& password);
-    void OnSettingsAnonymousResult(bool openUserDialog, bool showErrorLabel, const QString& errorLabelText);
-    void OnSettingsUserResult(bool success, bool unknownDatabase, bool badCredentials, const QString& unknownDbMessage);
+    void OnDatabaseUserSubmitted(const QString& User, const QString& Password);
+    void OnSettingsAnonymousResult(bool OpenUserDialog, bool ShowErrorLabel, const QString& ErrorLabelText);
+    void OnSettingsUserResult(bool Success, bool UnknownDatabase, bool BadCredentials, const QString& UnknownDbMessage);
 
 private:
     void SetupDBStatus();

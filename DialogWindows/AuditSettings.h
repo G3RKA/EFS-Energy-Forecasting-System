@@ -15,15 +15,15 @@ class AuditSettings : public QDialog
     Q_OBJECT
 
 public:
-    explicit AuditSettings(QWidget *parent = nullptr);
+    explicit AuditSettings(QWidget *Parent = nullptr);
     ~AuditSettings();
 
 private slots:
     void on_CloseButton_clicked();
 
 private:
-    void WriteAuditFlag(const QString& key, bool checked);
-    void LoadAuditCheckbox(QCheckBox* box, QSettings& settings, const QString& key);
+    void WriteAuditFlag(const QString& Key, bool Checked);
+    void LoadAuditCheckbox(QCheckBox* Box, QSettings& Settings, const QString& Key);
 
     Ui::AuditSettings *ui;
 };

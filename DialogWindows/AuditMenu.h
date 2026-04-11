@@ -12,7 +12,7 @@ class AuditMenu : public QDialog
     Q_OBJECT
 
 public:
-    explicit AuditMenu(QWidget *parent = nullptr);
+    explicit AuditMenu(QWidget *Parent = nullptr);
     ~AuditMenu();
 
 private slots:

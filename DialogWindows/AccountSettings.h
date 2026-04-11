@@ -17,7 +17,7 @@ class AccountSettings : public QDialog
     Q_OBJECT
 
 public:
-    explicit AccountSettings(QWidget *parent = nullptr);
+    explicit AccountSettings(QWidget *Parent = nullptr);
     ~AccountSettings();
 
 private slots:
@@ -26,12 +26,12 @@ private slots:
 
 private:
     void LoadUsersFromDatabase();
-    void LoadUsers(const QVector<AccountUserRow>& users);
-    void EditUserRowByLogin(const QString& login, const QString& name);
-    void RemoveUserRowByLogin(const QString& login);
-    void SetActionButtonProperties(QPushButton* button, const QString& login);
-    void OnEditButtonClicked(QPushButton* button);
-    void OnDeleteButtonClicked(QPushButton* button);
+    void LoadUsers(const QVector<AccountUserRow>& Users);
+    void EditUserRowByLogin(const QString& Login, const QString& Name);
+    void RemoveUserRowByLogin(const QString& Login);
+    void SetActionButtonProperties(QPushButton* Button, const QString& Login);
+    void OnEditButtonClicked(QPushButton* Button);
+    void OnDeleteButtonClicked(QPushButton* Button);
 
     QString FormatLastVisit(const QVariant&);
     QString FormatRole(const QVariant&);

@@ -15,19 +15,19 @@ class DataMenu : public QDialog
     Q_OBJECT
 
 public:
-    explicit DataMenu(QWidget *parent = nullptr);
+    explicit DataMenu(QWidget *Parent = nullptr);
     ~DataMenu();
 
 private slots:
     void on_CloseButton_clicked();
 
     void on_LoadButton_clicked();
-    void OnCSVProcessingFinished(bool success, const QString& message);
+    void OnCSVProcessingFinished(bool Success, const QString& Message);
 
 private:
     Ui::DataMenu *ui;
 
-    void SetupButton(QMessageBox *Box);
+    void SetupButton(QMessageBox *MessageBox);
 
     QPointer<QMessageBox> CSVWaitDialog;
 };

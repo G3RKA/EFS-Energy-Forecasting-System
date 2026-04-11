@@ -5,14 +5,15 @@
 #include "DataBaseUserSettings.h"
 #include "DataManager.h"
 
+#include <QLineEdit>
 #include <QIntValidator>
 #include <QRegularExpression>
 #include <QRegularExpressionValidator>
 #include <QDebug>
 #include <QSettings>
 
-DataBaseSettings::DataBaseSettings(QWidget *parent)
-    : QDialog(parent)
+DataBaseSettings::DataBaseSettings(QWidget *Parent)
+    : QDialog(Parent)
     , ui(new Ui::DataBaseSettings)
 {
     ui->setupUi(this);
@@ -56,112 +57,112 @@ void DataBaseSettings::on_ConnectButton_clicked()
     DataManager::instance().RequestTrySettingsAnonymous();
 }
 
-void DataBaseSettings::UpdateDBState(bool connected)
+void DataBaseSettings::UpdateDBState(bool Connected)
 {
-    ui->StatusInfoLabel->setText(connected ? "ПОДКЛЮЧЕНО" : "ОТКЛЮЧЕНО");
+    ui->StatusInfoLabel->setText(Connected ? "ПОДКЛЮЧЕНО" : "ОТКЛЮЧЕНО");
 }
 
-void DataBaseSettings::OnSettingsAnonymousResult(bool openUserDialog, bool showErrorLabel, const QString& errorLabelText)
+void DataBaseSettings::OnSettingsAnonymousResult(bool OpenUserDialog, bool ShowErrorLabel, const QString& ErrorLabelText)
 {
-    if (showErrorLabel) {
+    if (ShowErrorLabel) {
         ui->ErrorLabel->setVisible(true);
-        ui->ErrorLabel->setText(errorLabelText);
+        ui->ErrorLabel->setText(ErrorLabelText);
     } else {
         ui->ErrorLabel->setVisible(false);
     }
 
-    if (openUserDialog) {
-        DataBaseUserSettings menu;
-        connect(&menu, &DataBaseUserSettings::ConnectRequested, this, &DataBaseSettings::OnDatabaseUserSubmitted);
-        connect(this, &DataBaseSettings::CloseUserConnection, &menu, &DataBaseUserSettings::OnCloseUserConnection);
-        connect(this, &DataBaseSettings::LoginError, &menu, &DataBaseUserSettings::OnLoginError);
-        menu.exec();
+    if (OpenUserDialog) {
+        DataBaseUserSettings Menu;
+        connect(&Menu, &DataBaseUserSettings::ConnectRequested, this, &DataBaseSettings::OnDatabaseUserSubmitted);
+        connect(this, &DataBaseSettings::CloseUserConnection, &Menu, &DataBaseUserSettings::OnCloseUserConnection);
+        connect(this, &DataBaseSettings::LoginError, &Menu, &DataBaseUserSettings::OnLoginError);
+        Menu.exec();
     }
 
     DataManager::instance().RequestDBState();
     ui->ConnectButton->setDisabled(false);
 }
 
-void DataBaseSettings::OnSettingsUserResult(bool success, bool unknownDatabase, bool badCredentials,
-                                            const QString& unknownDbMessage)
+void DataBaseSettings::OnSettingsUserResult(bool Success, bool UnknownDatabase, bool BadCredentials,
+                                            const QString& UnknownDbMessage)
 {
     DataManager::instance().RequestDBState();
 
-    if (success) {
+    if (Success) {
         ui->ErrorLabel->setVisible(false);
         emit CloseUserConnection();
         return;
     }
 
-    if (unknownDatabase) {
+    if (UnknownDatabase) {
         ui->ErrorLabel->setVisible(true);
-        ui->ErrorLabel->setText(unknownDbMessage);
+        ui->ErrorLabel->setText(UnknownDbMessage);
         emit CloseUserConnection();
         return;
     }
 
-    if (badCredentials) {
+    if (BadCredentials) {
         emit LoginError();
     }
 }
 
 void DataBaseSettings::ConnectionDataChanged()
 {
-    auto lineAcceptable = [](QLineEdit *edit) {
-        if (edit->text().isEmpty())
+    auto LineAcceptable = [](QLineEdit *Edit) {
+        if (Edit->text().isEmpty())
             return false;
-        int pos = 0;
-        QString t = edit->text();
-        return edit->validator()->validate(t, pos) == QValidator::Acceptable;
+        int Pos = 0;
+        QString T = Edit->text();
+        return Edit->validator()->validate(T, Pos) == QValidator::Acceptable;
     };
 
-    ui->ConnectButton->setEnabled(lineAcceptable(ui->HostEdit) and lineAcceptable(ui->PortEdit)
-                                  and lineAcceptable(ui->NameEdit));
+    ui->ConnectButton->setEnabled(LineAcceptable(ui->HostEdit) and LineAcceptable(ui->PortEdit)
+                                  and LineAcceptable(ui->NameEdit));
 }
 
-void DataBaseSettings::OnDatabaseUserSubmitted(const QString& user, const QString& password)
+void DataBaseSettings::OnDatabaseUserSubmitted(const QString& User, const QString& Password)
 {
-    QSettings settings(AppConfig::GetSettingsPath(), QSettings::IniFormat);
-    settings.beginGroup(AppConfig::DatabaseGroup);
-        settings.setValue(AppConfig::DatabaseLoginKey, user.trimmed());
-        settings.setValue(AppConfig::DatabasePasswordKey, password.trimmed());
-    settings.endGroup();
-    settings.sync();
+    QSettings Settings(AppConfig::GetSettingsPath(), QSettings::IniFormat);
+    Settings.beginGroup(AppConfig::DatabaseGroup);
+        Settings.setValue(AppConfig::DatabaseLoginKey, User.trimmed());
+        Settings.setValue(AppConfig::DatabasePasswordKey, Password.trimmed());
+    Settings.endGroup();
+    Settings.sync();
 
     DataManager::instance().RequestTrySettingsWithUser();
 }
 
 void DataBaseSettings::SetupDBStatus()
 {
-    QSettings settings(AppConfig::GetSettingsPath(), QSettings::IniFormat);
-    settings.beginGroup(AppConfig::DatabaseGroup);
-        ui->HostEdit->setText(settings.value(AppConfig::DatabaseHostKey).toString().trimmed());
-        ui->PortEdit->setText(settings.value(AppConfig::DatabasePortKey).toString().trimmed());
-        ui->NameEdit->setText(settings.value(AppConfig::DatabaseNameKey).toString().trimmed());
-    settings.endGroup();
+    QSettings Settings(AppConfig::GetSettingsPath(), QSettings::IniFormat);
+    Settings.beginGroup(AppConfig::DatabaseGroup);
+        ui->HostEdit->setText(Settings.value(AppConfig::DatabaseHostKey).toString().trimmed());
+        ui->PortEdit->setText(Settings.value(AppConfig::DatabasePortKey).toString().trimmed());
+        ui->NameEdit->setText(Settings.value(AppConfig::DatabaseNameKey).toString().trimmed());
+    Settings.endGroup();
 }
 
 void DataBaseSettings::SetupInputConstraints()
 {
     ui->HostEdit->setMaxLength(255);
-    const QRegularExpression hostChars(R"(^[a-zA-Z0-9._]*$)");
-    ui->HostEdit->setValidator(new QRegularExpressionValidator(hostChars, ui->HostEdit));
+    const QRegularExpression HostChars(R"(^[a-zA-Z0-9._]*$)");
+    ui->HostEdit->setValidator(new QRegularExpressionValidator(HostChars, ui->HostEdit));
 
     ui->PortEdit->setMaxLength(5);
     ui->PortEdit->setValidator(new QIntValidator(1, 65535, ui->PortEdit));
 
     ui->NameEdit->setMaxLength(63);
-    const QRegularExpression dbName(R"(^[a-zA-Z_][a-zA-Z0-9_]*$)");
-    ui->NameEdit->setValidator(new QRegularExpressionValidator(dbName, ui->NameEdit));
+    const QRegularExpression DbName(R"(^[a-zA-Z_][a-zA-Z0-9_]*$)");
+    ui->NameEdit->setValidator(new QRegularExpressionValidator(DbName, ui->NameEdit));
 }
 
 void DataBaseSettings::SaveDatabaseConnectionSettings()
 {
-    QSettings settings(AppConfig::GetSettingsPath(), QSettings::IniFormat);
-    settings.beginGroup(AppConfig::DatabaseGroup);
-        settings.setValue(AppConfig::DatabaseHostKey , ui->HostEdit->text());
-        settings.setValue(AppConfig::DatabasePortKey, ui->PortEdit->text());
-        settings.setValue(AppConfig::DatabaseNameKey, ui->NameEdit->text());
-    settings.endGroup();
-    settings.sync();
+    QSettings Settings(AppConfig::GetSettingsPath(), QSettings::IniFormat);
+    Settings.beginGroup(AppConfig::DatabaseGroup);
+        Settings.setValue(AppConfig::DatabaseHostKey , ui->HostEdit->text());
+        Settings.setValue(AppConfig::DatabasePortKey, ui->PortEdit->text());
+        Settings.setValue(AppConfig::DatabaseNameKey, ui->NameEdit->text());
+    Settings.endGroup();
+    Settings.sync();
 }

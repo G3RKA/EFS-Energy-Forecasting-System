@@ -5,6 +5,7 @@
 #include <QVector>
 
 #include "DataTypes/AccountUserRow.h"
+#include "DataTypes/ConsumerGroupRow.h"
 
 class QThread;
 class AppDataBase;
@@ -22,11 +23,12 @@ public:
     void RequestTrySettingsAnonymous();
     void RequestTrySettingsWithUser();
     void RequestUsersList();
-    void RequestDeleteUser(const QString& login);
-    void RequestUpdateUser(const QString& login, const QString& name, const QString& password);
-    void RequestCreateUser(const QString& login, const QString& name, const QString& role, const QString& passwordHash);
-    void RequestLoginVerify(const QString& login, const QString& password);
-    void RequestProcessCSV(const QString& filePath);
+    void RequestConsumerGroupsList();
+    void RequestDeleteUser(const QString& Login);
+    void RequestUpdateUser(const QString& Login, const QString& Name, const QString& Password);
+    void RequestCreateUser(const QString& Login, const QString& Name, const QString& Role, const QString& PasswordHash);
+    void RequestLoginVerify(const QString& Login, const QString& Password);
+    void RequestProcessCSV(const QString& FilePath);
 
     ~DataManager() override;
 
@@ -40,31 +42,33 @@ signals:
     void OnTrySettingsAnonymousRequested();
     void OnTrySettingsWithUserRequested();
     void OnUsersListRequested();
-    void OnDeleteUserRequested(const QString& login);
-    void OnUpdateUserRequested(const QString& login, const QString& name, const QString& password);
-    void OnCreateUserRequested(const QString& login, const QString& name, const QString& role, const QString& passwordHash);
-    void OnLoginVerifyRequested(const QString& login, const QString& password);
-    void OnProcessCSVRequested(const QString& filePath);
+    void OnConsumerGroupsListRequested();
+    void OnDeleteUserRequested(const QString& Login);
+    void OnUpdateUserRequested(const QString& Login, const QString& Name, const QString& Password);
+    void OnCreateUserRequested(const QString& Login, const QString& Name, const QString& Role, const QString& PasswordHash);
+    void OnLoginVerifyRequested(const QString& Login, const QString& Password);
+    void OnProcessCSVRequested(const QString& FilePath);
 
     //  Output
     void OnLostConnection();
     void OnDataBaseStateSended(bool);
-    void SettingsAnonymousResult(bool openUserDialog, bool showErrorLabel, const QString& errorLabelText);
-    void SettingsUserResult(bool success, bool unknownDatabase, bool badCredentials, const QString& unknownDbMessage);
-    void UsersListLoaded(const QVector<AccountUserRow>& users);
-    void UserDeleteFinished(bool success, const QString& login);
-    void UserUpdateFinished(bool success, const QString& login, const QString& name);
-    void UserCreateFinished(bool success, const QString& login, bool duplicateLogin);
-    void LoginVerifyFinished(bool success, const QString& dbRole, const QString& displayName, bool invalidCredentials);
-    void CSVProcessingFinished(bool success, const QString& message);
+    void SettingsAnonymousResult(bool OpenUserDialog, bool ShowErrorLabel, const QString& ErrorLabelText);
+    void SettingsUserResult(bool Success, bool UnknownDatabase, bool BadCredentials, const QString& UnknownDbMessage);
+    void UsersListLoaded(const QVector<AccountUserRow>& Users);
+    void ConsumerGroupsLoaded(const QVector<ConsumerGroupRow>& Groups);
+    void UserDeleteFinished(bool Success, const QString& Login);
+    void UserUpdateFinished(bool Success, const QString& Login, const QString& Name);
+    void UserCreateFinished(bool Success, const QString& Login, bool DuplicateLogin);
+    void LoginVerifyFinished(bool Success, const QString& DbRole, const QString& DisplayName, bool InvalidCredentials);
+    void CSVProcessingFinished(bool Success, const QString& Message);
 
 private:
-    explicit DataManager(QObject *parent = nullptr);
+    explicit DataManager(QObject *Parent = nullptr);
 
-    QThread* m_thread = nullptr;
-    AppDataBase* m_worker = nullptr;
-    CSVWorker* m_CSVWorker = nullptr;
-    bool m_initialized = false;
+    QThread* m_Thread = nullptr;
+    AppDataBase* m_Worker = nullptr;
+    CSVWorker* m_CsvWorker = nullptr;
+    bool m_Initialized = false;
 };
 
 #endif // DATAMANAGER_H

@@ -6,41 +6,41 @@
 #include <QCheckBox>
 #include <QSettings>
 
-AuditSettings::AuditSettings(QWidget *parent)
-    : QDialog(parent)
+AuditSettings::AuditSettings(QWidget *Parent)
+    : QDialog(Parent)
     , ui(new Ui::AuditSettings)
 {
     ui->setupUi(this);
 
     setWindowFlags(Qt::Dialog | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
 
-    QSettings settings(AppConfig::GetSettingsPath(), QSettings::IniFormat);
-    settings.beginGroup("Audit");
-        LoadAuditCheckbox(ui->DisableButton, settings, "AnalystDisableForecast");
-        LoadAuditCheckbox(ui->EnableButton, settings, "AnalystEnableForecast");
-        LoadAuditCheckbox(ui->UploadButton, settings, "AnalystUploadData");
-        LoadAuditCheckbox(ui->ChangeButton, settings, "AnalystChangeData");
-        LoadAuditCheckbox(ui->JoinButton, settings, "AnalystLoginLogout");
-        LoadAuditCheckbox(ui->JoinButton_2, settings, "EnergyLoginLogout");
-    settings.endGroup();
+    QSettings Settings(AppConfig::GetSettingsPath(), QSettings::IniFormat);
+    Settings.beginGroup("Audit");
+        LoadAuditCheckbox(ui->DisableButton, Settings, "AnalystDisableForecast");
+        LoadAuditCheckbox(ui->EnableButton, Settings, "AnalystEnableForecast");
+        LoadAuditCheckbox(ui->UploadButton, Settings, "AnalystUploadData");
+        LoadAuditCheckbox(ui->ChangeButton, Settings, "AnalystChangeData");
+        LoadAuditCheckbox(ui->JoinButton, Settings, "AnalystLoginLogout");
+        LoadAuditCheckbox(ui->JoinButton_2, Settings, "EnergyLoginLogout");
+    Settings.endGroup();
 
-    connect(ui->DisableButton, &QCheckBox::toggled, this, [this](bool on) {
-        WriteAuditFlag("AnalystDisableForecast", on);
+    connect(ui->DisableButton, &QCheckBox::toggled, this, [this](bool On) {
+        WriteAuditFlag("AnalystDisableForecast", On);
     });
-    connect(ui->EnableButton, &QCheckBox::toggled, this, [this](bool on) {
-        WriteAuditFlag("AnalystEnableForecast", on);
+    connect(ui->EnableButton, &QCheckBox::toggled, this, [this](bool On) {
+        WriteAuditFlag("AnalystEnableForecast", On);
     });
-    connect(ui->UploadButton, &QCheckBox::toggled, this, [this](bool on) {
-        WriteAuditFlag("AnalystUploadData", on);
+    connect(ui->UploadButton, &QCheckBox::toggled, this, [this](bool On) {
+        WriteAuditFlag("AnalystUploadData", On);
     });
-    connect(ui->ChangeButton, &QCheckBox::toggled, this, [this](bool on) {
-        WriteAuditFlag("AnalystChangeData", on);
+    connect(ui->ChangeButton, &QCheckBox::toggled, this, [this](bool On) {
+        WriteAuditFlag("AnalystChangeData", On);
     });
-    connect(ui->JoinButton, &QCheckBox::toggled, this, [this](bool on) {
-        WriteAuditFlag("AnalystLoginLogout", on);
+    connect(ui->JoinButton, &QCheckBox::toggled, this, [this](bool On) {
+        WriteAuditFlag("AnalystLoginLogout", On);
     });
-    connect(ui->JoinButton_2, &QCheckBox::toggled, this, [this](bool on) {
-        WriteAuditFlag("EnergyLoginLogout", on);
+    connect(ui->JoinButton_2, &QCheckBox::toggled, this, [this](bool On) {
+        WriteAuditFlag("EnergyLoginLogout", On);
     });
 }
 
@@ -54,18 +54,18 @@ void AuditSettings::on_CloseButton_clicked()
     this->close();
 }
 
-void AuditSettings::WriteAuditFlag(const QString& key, bool checked)
+void AuditSettings::WriteAuditFlag(const QString& Key, bool Checked)
 {
-    QSettings settings(AppConfig::GetSettingsPath(), QSettings::IniFormat);
-    settings.beginGroup("Audit");
-        settings.setValue(key, checked ? 1 : 0);
-    settings.endGroup();
-    settings.sync();
+    QSettings Settings(AppConfig::GetSettingsPath(), QSettings::IniFormat);
+    Settings.beginGroup("Audit");
+        Settings.setValue(Key, Checked ? 1 : 0);
+    Settings.endGroup();
+    Settings.sync();
 }
 
-void AuditSettings::LoadAuditCheckbox(QCheckBox* box, QSettings& settings, const QString& key)
+void AuditSettings::LoadAuditCheckbox(QCheckBox* Box, QSettings& Settings, const QString& Key)
 {
-    box->blockSignals(true);
-    box->setChecked(settings.value(key, 0).toInt() != 0);
-    box->blockSignals(false);
+    Box->blockSignals(true);
+    Box->setChecked(Settings.value(Key, 0).toInt() != 0);
+    Box->blockSignals(false);
 }

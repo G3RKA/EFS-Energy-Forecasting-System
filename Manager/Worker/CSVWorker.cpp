@@ -4,132 +4,145 @@
 #include <QDate>
 #include <QFile>
 #include <QIODevice>
+#include <QSet>
 #include <QTextStream>
 
-CSVWorker::CSVWorker(QObject *parent)
-    : QObject{parent}
+CSVWorker::CSVWorker(QObject *Parent)
+    : QObject{Parent}
 {
 }
 
-void CSVWorker::OnProcessCSVRequested(const QString& filePath)
+void CSVWorker::OnProcessCSVRequested(const QString& FilePath)
 {
-    if (!filePath.endsWith(".csv", Qt::CaseInsensitive)) {
+    if (!FilePath.endsWith(".csv", Qt::CaseInsensitive)) {
         emit CSVProcessingFinished(false, "0");
         return;
     }
 
-    QFile file(filePath);
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+    QFile File(FilePath);
+    if (!File.open(QIODevice::ReadOnly | QIODevice::Text)) {
         emit CSVProcessingFinished(false, "0");
         return;
     }
 
-    QTextStream in(&file);
+    QTextStream In(&File);
 
-    if (in.atEnd()) {
-        emit CSVProcessingFinished(false, "1");
+    if (In.atEnd()) {
+        emit CSVProcessingFinished(false, "0");
         return;
     }
 
-    QString workLine = in.readLine();
-    int lineNumber = 1;
+    QString WorkLine = In.readLine();
+    int LineNumber = 1;
 
-    if (!workLine.isEmpty() and workLine.at(0) == QChar::ByteOrderMark) {
-        workLine.remove(0, 1);
+    if (!WorkLine.isEmpty() and WorkLine.at(0) == QChar::ByteOrderMark) {
+        WorkLine.remove(0, 1);
     }
 
-    if (workLine.trimmed().isEmpty()) {
-        emit CSVProcessingFinished(false, QString::number(lineNumber));
+    if (WorkLine.trimmed().isEmpty()) {
+        emit CSVProcessingFinished(false, QString::number(LineNumber));
         return;
     }
 
-    const QStringList cells = SplitCSVLine(workLine);
-    if (!HeaderMatchesExpected(cells)) {
-        emit CSVProcessingFinished(false, QString::number(lineNumber));
+    const QStringList Cells = SplitCSVLine(WorkLine);
+    if (!HeaderMatchesExpected(Cells)) {
+        emit CSVProcessingFinished(false, QString::number(LineNumber));
         return;
     }
 
-    while (!in.atEnd()) {
-        workLine = in.readLine();
-        ++lineNumber;
+    QSet<QString> UniqueGroups;
 
-        if (workLine.trimmed().isEmpty()) {
-            if (!in.atEnd()) {
-                emit CSVProcessingFinished(false, QString::number(lineNumber));
+    while (!In.atEnd()) {
+        WorkLine = In.readLine();
+        ++LineNumber;
+
+        if (WorkLine.trimmed().isEmpty()) {
+            if (!In.atEnd()) {
+                emit CSVProcessingFinished(false, QString::number(LineNumber));
                 return;
             }
             continue;
         }
 
-        const QStringList cells = SplitCSVLine(workLine);
+        const QStringList RowCells = SplitCSVLine(WorkLine);
 
-        if (cells.size() != 5) {
-            emit CSVProcessingFinished(false, QString::number(lineNumber));
+        if (RowCells.size() != 5) {
+            emit CSVProcessingFinished(false, QString::number(LineNumber));
             return;
         }
 
-        if (!DataRowIsValid(cells)) {
-            emit CSVProcessingFinished(false, QString::number(lineNumber));
+        if (!DataRowIsValid(RowCells)) {
+            emit CSVProcessingFinished(false, QString::number(LineNumber));
             return;
         }
+
+        UniqueGroups.insert(RowCells.at(0));
     }
+
+    QStringList GroupNames;
+    GroupNames.reserve(UniqueGroups.size());
+    for (const QString& G : UniqueGroups) {
+        GroupNames.append(G);
+    }
+
+    emit CSVGroupsToEnsure(GroupNames);
 
     emit CSVProcessingFinished(true, QString());
 }
 
-QStringList CSVWorker::SplitCSVLine(const QString& line)
+QStringList CSVWorker::SplitCSVLine(const QString& Line)
 {
-    const QStringList parts = line.split(',', Qt::KeepEmptyParts);
-    QStringList result;
+    const QStringList Parts = Line.split(',', Qt::KeepEmptyParts);
+    QStringList Result;
 
-    result.reserve(parts.size());
-    for (const QString& part : parts) {
-        result.append(part.trimmed());
+    Result.reserve(Parts.size());
+    for (const QString& Part : Parts) {
+        Result.append(Part.trimmed());
     }
-    return result;
+    return Result;
 }
 
-bool CSVWorker::HeaderMatchesExpected(const QStringList& cells)
+bool CSVWorker::HeaderMatchesExpected(const QStringList& Cells)
 {
-    const QStringList expected = {
+    const QStringList Expected = {
         "Group",
         "Date",
         "Hour",
         "Count",
         "Consumption",
     };
-    return cells == expected;
+    return Cells == Expected;
 }
 
-bool CSVWorker::DataRowIsValid(const QStringList& cells)
+bool CSVWorker::DataRowIsValid(const QStringList& Cells)
 {
-    if (cells.size() != 5) {
+    if (Cells.size() != 5) {
         return false;
     }
 
-    if (cells.at(0).isEmpty()) {
+    if (Cells.at(0).isEmpty()) {
         return false;
     }
 
-    const QString dateStr = cells.at(1);
-    QDate date = QDate::fromString(dateStr, "dd.MM.yyyy");
-    if (!date.isValid()) {
+    const QString DateStr = Cells.at(1);
+    QDate Date = QDate::fromString(DateStr, "dd.MM.yyyy");
+    if (!Date.isValid()) {
         return false;
     }
 
-    bool ok = false;
-    const int hour = cells.at(2).toInt(&ok);
-    if (!ok or hour < 0 or hour > 23) {
+    bool Ok = false;
+    const int Hour = Cells.at(2).toInt(&Ok);
+    if (!Ok or Hour < 0 or Hour > 23) {
         return false;
     }
 
-    const int count = cells.at(3).toInt(&ok);
-    if (!ok or count < 0) {
+    const int Count = Cells.at(3).toInt(&Ok);
+    if (!Ok or Count < 0) {
         return false;
     }
 
-    const double consumption = cells.at(4).toDouble(&ok);
-    if (!ok or consumption < 0.0) {
+    const double Consumption = Cells.at(4).toDouble(&Ok);
+    if (!Ok or Consumption < 0.0) {
         return false;
     }
 

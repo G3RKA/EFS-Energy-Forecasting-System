@@ -12,16 +12,16 @@ class AccountDelete : public QDialog
     Q_OBJECT
 
 public:
-    explicit AccountDelete(QWidget *parent = nullptr, const QString& login = QString());
+    explicit AccountDelete(QWidget *Parent = nullptr, const QString& InLogin = QString());
     ~AccountDelete();
 
 signals:
-    void UserDeleted(const QString& login);
+    void UserDeleted(const QString& Login);
 
 private slots:
     void on_ConfirmButton_clicked();
     void on_CancelButton_clicked();
-    void OnUserDeleteFinished(bool success, const QString& login);
+    void OnUserDeleteFinished(bool Success, const QString& Login);
 
 private:
     QString UserLogin;

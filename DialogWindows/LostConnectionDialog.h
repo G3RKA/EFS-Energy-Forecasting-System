@@ -12,7 +12,7 @@ class LostConnectionDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit LostConnectionDialog(QWidget *parent = nullptr);
+    explicit LostConnectionDialog(QWidget *Parent = nullptr);
     ~LostConnectionDialog();
 
 private slots:

@@ -12,7 +12,7 @@ class EnergyMenu : public QWidget
     Q_OBJECT
 
 public:
-    explicit EnergyMenu(QWidget *parent = nullptr);
+    explicit EnergyMenu(QWidget *Parent = nullptr);
     ~EnergyMenu();
 
 private:

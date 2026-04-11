@@ -6,10 +6,10 @@
 #include <QVariant>
 
 struct AccountUserRow {
-    QString login;
-    QString name;
-    QString role;
-    QVariant lastVisit;
+    QString Login;
+    QString Name;
+    QString Role;
+    QVariant LastVisit;
 };
 
 Q_DECLARE_METATYPE(AccountUserRow)

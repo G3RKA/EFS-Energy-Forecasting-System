@@ -4,8 +4,10 @@
 #include "DataMenu.h"
 #include "ConsumersMenu.h"
 
-AnalystMenu::AnalystMenu(QWidget *parent)
-    : QWidget(parent)
+#include <QHeaderView>
+
+AnalystMenu::AnalystMenu(QWidget *Parent)
+    : QWidget(Parent)
     , ui(new Ui::AnalystMenu)
 {
     ui->setupUi(this);

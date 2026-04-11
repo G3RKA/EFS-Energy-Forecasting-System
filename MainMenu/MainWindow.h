@@ -14,7 +14,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
+    MainWindow(QWidget *Parent = nullptr);
     ~MainWindow();
 
 public slots:
@@ -24,8 +24,8 @@ private slots:
     void on_LogInButton_clicked();
     void on_RecoveryButton_clicked();
     void on_LogOutButton_clicked();
-    void OnLoginVerifyFinished(bool success, const QString& dbRole, const QString& displayName,
-                               bool invalidCredentials);
+    void OnLoginVerifyFinished(bool Success, const QString& DbRole, const QString& DisplayName,
+                               bool InvalidCredentials);
 
 private:
     void SetUserName(const QString&);

@@ -12,7 +12,7 @@ class AnalystMenu : public QWidget
     Q_OBJECT
 
 public:
-    explicit AnalystMenu(QWidget *parent = nullptr);
+    explicit AnalystMenu(QWidget *Parent = nullptr);
     ~AnalystMenu();
 
 private slots:

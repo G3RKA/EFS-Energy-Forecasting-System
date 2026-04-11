@@ -10,176 +10,240 @@
 #include "AppConfig.h"
 #include "bcrypt.hpp"
 
-AppDataBase::AppDataBase(QObject *parent)
-    : QObject{parent}
+AppDataBase::AppDataBase(QObject *Parent)
+    : QObject{Parent}
 {
 
 }
 
 void AppDataBase::SendDataBaseState()
 {
-    const QString connName = AppConfig::DatabaseName;
-    bool connected = false;
-    if (QSqlDatabase::contains(connName)) {
-        QSqlDatabase db = QSqlDatabase::database(connName);
-        connected = db.isValid() && db.isOpen();
+    const QString ConnName = AppConfig::DatabaseName;
+    bool Connected = false;
+    if (QSqlDatabase::contains(ConnName)) {
+        QSqlDatabase Database = QSqlDatabase::database(ConnName);
+        Connected = Database.isValid() && Database.isOpen();
     }
-    emit OnDataBaseStateSended(connected);
+    emit OnDataBaseStateSended(Connected);
 }
 
 
 void AppDataBase::GetAllUsers()
 {
-    QVector<AccountUserRow> rows;
-    QSqlDatabase db;
-    if (!GetOpenDatabase(db)) {
-        emit UsersListLoaded(rows);
+    QVector<AccountUserRow> Rows;
+    QSqlDatabase Database;
+    if (!GetOpenDatabase(Database)) {
+        emit UsersListLoaded(Rows);
         return;
     }
 
-    QSqlQuery query(db);
-    query.prepare(QStringLiteral("SELECT Login, Name, Role, LastVisit FROM %1 ORDER BY Login")
+    QSqlQuery Query(Database);
+    Query.prepare(QStringLiteral("SELECT Login, Name, Role, LastVisit FROM %1 ORDER BY Login")
                       .arg(AppConfig::DatabaseUsersTable));
 
-    if (!query.exec()) {
-        qDebug() << "DataBase: не удалось загрузить пользователей:" << query.lastError().text();
-        emit UsersListLoaded(rows);
+    if (!Query.exec()) {
+        qDebug() << "DataBase: не удалось загрузить пользователей:" << Query.lastError().text();
+        emit UsersListLoaded(Rows);
         return;
     }
 
-    while (query.next()) {
-        AccountUserRow row;
-        row.login = query.value(0).toString();
-        row.name = query.value(1).toString();
-        row.role = query.value(2).toString();
-        row.lastVisit = query.value(3);
-        rows.append(std::move(row));
+    while (Query.next()) {
+        AccountUserRow Row;
+        Row.Login = Query.value(0).toString();
+        Row.Name = Query.value(1).toString();
+        Row.Role = Query.value(2).toString();
+        Row.LastVisit = Query.value(3);
+        Rows.append(std::move(Row));
     }
-    emit UsersListLoaded(rows);
+    emit UsersListLoaded(Rows);
     return;
 }
 
-void AppDataBase::OnDeleteUserRequested(const QString& login)
+void AppDataBase::GetAllConsumerGroups()
 {
-    bool ok = false;
-    QSqlDatabase db;
-    if (GetOpenDatabase(db)) {
-        QSqlQuery query(db);
-        query.prepare(QStringLiteral("DELETE FROM %1 WHERE Login = :login").arg(AppConfig::DatabaseUsersTable));
-        query.bindValue(QStringLiteral(":login"), login);
-        if (query.exec()) {
-            ok = true;
-        } else {
-            qDebug() << "DataBase: не удалось удалить пользователя:" << query.lastError().text();
-        }
-    }
-    emit UserDeleteFinished(ok, login);
-}
-
-void AppDataBase::OnUpdateUserRequested(const QString& login, const QString& name, const QString& password)
-{
-    bool ok = false;
-    QSqlDatabase db;
-    if (GetOpenDatabase(db)) {
-        QSqlQuery query(db);
-        if (password.isEmpty()) {
-            query.prepare(QStringLiteral("UPDATE %1 SET Name = :name WHERE Login = :login").arg(AppConfig::DatabaseUsersTable));
-            query.bindValue(QStringLiteral(":name"), name);
-            query.bindValue(QStringLiteral(":login"), login);
-        } else {
-            query.prepare(QStringLiteral("UPDATE %1 SET Name = :name, Password = :password WHERE Login = :login")
-                              .arg(AppConfig::DatabaseUsersTable));
-            query.bindValue(QStringLiteral(":name"), name);
-            query.bindValue(QStringLiteral(":password"), password);
-            query.bindValue(QStringLiteral(":login"), login);
-        }
-
-        if (query.exec()) {
-            ok = true;
-        } else {
-            qDebug() << "DataBase: не удалось обновить пользователя:" << query.lastError().text();
-        }
-    }
-    emit UserUpdateFinished(ok, login, name);
-}
-
-void AppDataBase::OnLoginVerifyRequested(const QString& login, const QString& password)
-{
-    QSqlDatabase db;
-    if (!GetOpenDatabase(db)) {
+    QVector<ConsumerGroupRow> Rows;
+    QSqlDatabase Database;
+    if (!GetOpenDatabase(Database)) {
+        emit ConsumerGroupsLoaded(Rows);
         return;
     }
 
-    QSqlQuery query(db);
-    query.prepare(QStringLiteral("SELECT Role, Password, Name FROM %1 WHERE Login = :login")
+    QSqlQuery Query(Database);
+    Query.prepare(QStringLiteral("SELECT `Name`, `Amount` FROM %1 ORDER BY `Name`")
+                      .arg(AppConfig::DatabaseGroupTable));
+
+    if (!Query.exec()) {
+        qDebug() << "DataBase: не удалось загрузить группы:" << Query.lastError().text();
+        return;
+    }
+
+    while (Query.next()) {
+        ConsumerGroupRow Row;
+        Row.Name = Query.value(0).toString();
+        Row.Amount = Query.value(1).toInt();
+        Rows.append(std::move(Row));
+    }
+    emit ConsumerGroupsLoaded(Rows);
+}
+
+void AppDataBase::OnDeleteUserRequested(const QString& Login)
+{
+    bool Ok = false;
+    QSqlDatabase Database;
+    if (GetOpenDatabase(Database)) {
+        QSqlQuery Query(Database);
+        Query.prepare(QStringLiteral("DELETE FROM %1 WHERE Login = :login").arg(AppConfig::DatabaseUsersTable));
+        Query.bindValue(QStringLiteral(":login"), Login);
+        if (Query.exec()) {
+            Ok = true;
+        } else {
+            qDebug() << "DataBase: не удалось удалить пользователя:" << Query.lastError().text();
+        }
+    }
+    emit UserDeleteFinished(Ok, Login);
+}
+
+void AppDataBase::OnUpdateUserRequested(const QString& Login, const QString& Name, const QString& Password)
+{
+    bool Ok = false;
+    QSqlDatabase Database;
+    if (GetOpenDatabase(Database)) {
+        QSqlQuery Query(Database);
+        if (Password.isEmpty()) {
+            Query.prepare(QStringLiteral("UPDATE %1 SET Name = :name WHERE Login = :login").arg(AppConfig::DatabaseUsersTable));
+            Query.bindValue(QStringLiteral(":name"), Name);
+            Query.bindValue(QStringLiteral(":login"), Login);
+        } else {
+            Query.prepare(QStringLiteral("UPDATE %1 SET Name = :name, Password = :password WHERE Login = :login")
+                              .arg(AppConfig::DatabaseUsersTable));
+            Query.bindValue(QStringLiteral(":name"), Name);
+            Query.bindValue(QStringLiteral(":password"), Password);
+            Query.bindValue(QStringLiteral(":login"), Login);
+        }
+
+        if (Query.exec()) {
+            Ok = true;
+        } else {
+            qDebug() << "DataBase: не удалось обновить пользователя:" << Query.lastError().text();
+        }
+    }
+    emit UserUpdateFinished(Ok, Login, Name);
+}
+
+void AppDataBase::OnLoginVerifyRequested(const QString& Login, const QString& Password)
+{
+    QSqlDatabase Database;
+    if (!GetOpenDatabase(Database)) {
+        return;
+    }
+
+    QSqlQuery Query(Database);
+    Query.prepare(QStringLiteral("SELECT Role, Password, Name FROM %1 WHERE Login = :login")
                       .arg(AppConfig::DatabaseUsersTable));
-    query.bindValue(QStringLiteral(":login"), login);
-    if (!query.exec()) {
-        qDebug() << "DataBase: не удалось проверить вход:" << query.lastError().text();
+    Query.bindValue(QStringLiteral(":login"), Login);
+    if (!Query.exec()) {
+        qDebug() << "DataBase: не удалось проверить вход:" << Query.lastError().text();
         emit LoginVerifyFinished(false, QString(), QString(), false);
         return;
     }
 
-    if (!query.next()) {
+    if (!Query.next()) {
         emit LoginVerifyFinished(false, QString(), QString(), true);
         return;
     }
 
-    const QString dbRole = query.value(0).toString().trimmed().toLower();
-    const QString passwordHash = query.value(1).toString();
-    const QString displayName = query.value(2).toString();
+    const QString DbRole = Query.value(0).toString().trimmed().toLower();
+    const QString PasswordHash = Query.value(1).toString();
+    const QString DisplayName = Query.value(2).toString();
 
-    if (passwordHash.isEmpty()
-        or !BCrypt::validatePassword(password.toStdString(), passwordHash.toStdString())) {
+    if (PasswordHash.isEmpty()
+        or !BCrypt::validatePassword(Password.toStdString(), PasswordHash.toStdString())) {
         emit LoginVerifyFinished(false, QString(), QString(), true);
         return;
     }
 
-    UpdateLastVisitForLogin(login);
+    UpdateLastVisitForLogin(Login);
 
-    emit LoginVerifyFinished(true, dbRole, displayName, false);
+    emit LoginVerifyFinished(true, DbRole, DisplayName, false);
 }
 
-void AppDataBase::OnCreateUserRequested(const QString& login, const QString& name, const QString& role,
-                                        const QString& passwordHash)
+void AppDataBase::OnEnsureGroupsFromCSV(const QStringList& GroupNames)
 {
-    QSqlDatabase db;
-    if (!GetOpenDatabase(db)) {
+    QSqlDatabase Database;
+    if (!GetOpenDatabase(Database)) {
         return;
     }
 
-    QSqlQuery takenQuery(db);
-    takenQuery.prepare(QString("SELECT 1 FROM %1 WHERE Login = :login").arg(AppConfig::DatabaseUsersTable));
-    takenQuery.bindValue(":login", login);
-    if (!takenQuery.exec()) {
-        qDebug() << "DataBase: не удалось проверить уникальность логина:" << takenQuery.lastError().text();
-        return;
+    for (const QString& GroupName : GroupNames) {
+        if (GroupName.isEmpty()) {
+            continue;
+        }
+
+        QSqlQuery ExistsQuery(Database);
+        ExistsQuery.prepare(QStringLiteral("SELECT 1 FROM %1 WHERE `Name` = :name LIMIT 1")
+                                .arg(AppConfig::DatabaseGroupTable));
+        ExistsQuery.bindValue(":name", GroupName);
+        if (!ExistsQuery.exec()) {
+            qDebug() << "DataBase: не удалось проверить группу:" << ExistsQuery.lastError().text();
+            return;
+        }
+        if (ExistsQuery.next()) {
+            continue;
+        }
+
+        QSqlQuery InsertQuery(Database);
+        InsertQuery.prepare(QStringLiteral("INSERT INTO %1 (`Name`) VALUES (:name)")
+                                 .arg(AppConfig::DatabaseGroupTable));
+        InsertQuery.bindValue(":name", GroupName);
+        if (!InsertQuery.exec()) {
+            qDebug() << "DataBase: не удалось добавить группу:" << InsertQuery.lastError().text();
+            return;
+        }
     }
-    if (takenQuery.next()) {
-        emit UserCreateFinished(false, login, true);
+
+    emit CSVGroupsPersistFinished(true, QString());
+}
+
+void AppDataBase::OnCreateUserRequested(const QString& Login, const QString& Name, const QString& Role,
+                                        const QString& PasswordHash)
+{
+    QSqlDatabase Database;
+    if (!GetOpenDatabase(Database)) {
         return;
     }
 
-    const QString dbRole = AppConfig::ConvertRoleToDB(role);
-    if (dbRole.isEmpty()) {
-        qDebug() << "DataBase: некорректная роль пользователя:" << role;
+    QSqlQuery TakenQuery(Database);
+    TakenQuery.prepare(QString("SELECT 1 FROM %1 WHERE Login = :login").arg(AppConfig::DatabaseUsersTable));
+    TakenQuery.bindValue(":login", Login);
+    if (!TakenQuery.exec()) {
+        qDebug() << "DataBase: не удалось проверить уникальность логина:" << TakenQuery.lastError().text();
+        return;
+    }
+    if (TakenQuery.next()) {
+        emit UserCreateFinished(false, Login, true);
         return;
     }
 
-    QSqlQuery insert(db);
-    insert.prepare(QString("INSERT INTO %1 (Login, Name, Role, Password) VALUES (:login, :name, :role, :password)")
+    const QString DbRole = AppConfig::ConvertRoleToDB(Role);
+    if (DbRole.isEmpty()) {
+        qDebug() << "DataBase: некорректная роль пользователя:" << Role;
+        return;
+    }
+
+    QSqlQuery Insert(Database);
+    Insert.prepare(QString("INSERT INTO %1 (Login, Name, Role, Password) VALUES (:login, :name, :role, :password)")
                        .arg(AppConfig::DatabaseUsersTable));
-    insert.bindValue(":login", login);
-    insert.bindValue(":name", name);
-    insert.bindValue(":role", dbRole);
-    insert.bindValue(":password", passwordHash);
+    Insert.bindValue(":login", Login);
+    Insert.bindValue(":name", Name);
+    Insert.bindValue(":role", DbRole);
+    Insert.bindValue(":password", PasswordHash);
 
-    if (!insert.exec()) {
-        qDebug() << "DataBase: не удалось создать пользователя:" << insert.lastError().text();
+    if (!Insert.exec()) {
+        qDebug() << "DataBase: не удалось создать пользователя:" << Insert.lastError().text();
         return;
     }
 
-    emit UserCreateFinished(true, login, false);
+    emit UserCreateFinished(true, Login, false);
 }
 
 void AppDataBase::OnConnectRequested()
@@ -193,58 +257,58 @@ void AppDataBase::OnConnectRequested()
 
 bool AppDataBase::IternalConnectToDatabase()
 {
-    const QString DatabaseName = AppConfig::DatabaseName;
+    const QString MainConnectionName = AppConfig::DatabaseName;
 
-    QSettings settings(AppConfig::GetSettingsPath(), QSettings::IniFormat);
-    settings.beginGroup("DataBase");
-    const QString host = settings.value("Host").toString().trimmed();
-    const int port = settings.value("Port").toString().trimmed().toInt();
-    const QString name = settings.value("Name").toString().trimmed();
-    const QString user = settings.value("User").toString().trimmed();
-    const QString password = settings.value("Password").toString();
-    settings.endGroup();
+    QSettings Settings(AppConfig::GetSettingsPath(), QSettings::IniFormat);
+    Settings.beginGroup("DataBase");
+    const QString Host = Settings.value("Host").toString().trimmed();
+    const int Port = Settings.value("Port").toString().trimmed().toInt();
+    const QString CatalogName = Settings.value("Name").toString().trimmed();
+    const QString User = Settings.value("User").toString().trimmed();
+    const QString DbPassword = Settings.value("Password").toString();
+    Settings.endGroup();
 
-    const QString driver = "QMYSQL";
-    if (!QSqlDatabase::isDriverAvailable(driver)) {
+    const QString Driver = "QMYSQL";
+    if (!QSqlDatabase::isDriverAvailable(Driver)) {
         qDebug() << "Драйвер QMYSQL недоступен, автоподключение пропущено";
         return false;
     }
 
-    if (QSqlDatabase::contains(DatabaseName)) {
+    if (QSqlDatabase::contains(MainConnectionName)) {
         {
-            QSqlDatabase existing = QSqlDatabase::database(DatabaseName);
-            existing.close();
+            QSqlDatabase Existing = QSqlDatabase::database(MainConnectionName);
+            Existing.close();
         }
-        QSqlDatabase::removeDatabase(DatabaseName);
+        QSqlDatabase::removeDatabase(MainConnectionName);
     }
 
-    bool success = false;
+    bool Success = false;
     {
-        QSqlDatabase db = QSqlDatabase::addDatabase(driver, DatabaseName);
-        db.setHostName(host);
-        db.setPort(port);
-        db.setDatabaseName(name);
-        db.setUserName(user);
-        db.setPassword(password);
+        QSqlDatabase Database = QSqlDatabase::addDatabase(Driver, MainConnectionName);
+        Database.setHostName(Host);
+        Database.setPort(Port);
+        Database.setDatabaseName(CatalogName);
+        Database.setUserName(User);
+        Database.setPassword(DbPassword);
 
-        if (db.open()) {
+        if (Database.open()) {
             qDebug() << "Подключение к MySQL установлено;"
-                     << host << port << name;
-            success = true;
+                     << Host << Port << CatalogName;
+            Success = true;
         } else {
             qDebug() << "Не удалось подключиться к MySQL:"
-                     << db.lastError().text()
-                     << "nativeErrorCode:" << db.lastError().nativeErrorCode();
+                     << Database.lastError().text()
+                     << "nativeErrorCode:" << Database.lastError().nativeErrorCode();
         }
     }
 
-    if (!success)
-        QSqlDatabase::removeDatabase(DatabaseName);
+    if (!Success)
+        QSqlDatabase::removeDatabase(MainConnectionName);
 
-    return success;
+    return Success;
 }
 
-bool AppDataBase::GetOpenDatabase(QSqlDatabase& db)
+bool AppDataBase::GetOpenDatabase(QSqlDatabase& Database)
 {
     if (!QSqlDatabase::contains(AppConfig::DatabaseName)) {
         qDebug() << "DataBase: нет зарегистрированного подключения к БД";
@@ -252,16 +316,16 @@ bool AppDataBase::GetOpenDatabase(QSqlDatabase& db)
         return false;
     }
 
-    db = QSqlDatabase::database(AppConfig::DatabaseName);
-    if (!db.isOpen()) {
+    Database = QSqlDatabase::database(AppConfig::DatabaseName);
+    if (!Database.isOpen()) {
         qDebug() << "DataBase: подключение к БД не открыто";
         emit OnLostConnection();
         return false;
     }
 
-    QSqlQuery ping(db);
-    if (!ping.exec("SELECT 1")) {
-        qDebug() << "DataBase: пинг сервера не удался:" << ping.lastError().text();
+    QSqlQuery Ping(Database);
+    if (!Ping.exec("SELECT 1")) {
+        qDebug() << "DataBase: пинг сервера не удался:" << Ping.lastError().text();
         if (!IternalConnectToDatabase()) {
             qDebug() << "DataBase: не удалось переподключиться к БД";
             emit OnLostConnection();
@@ -271,21 +335,21 @@ bool AppDataBase::GetOpenDatabase(QSqlDatabase& db)
     return true;
 }
 
-bool AppDataBase::UpdateLastVisitForLogin(const QString& login)
+bool AppDataBase::UpdateLastVisitForLogin(const QString& Login)
 {
-    QSqlDatabase db;
-    if (!GetOpenDatabase(db)) {
+    QSqlDatabase Database;
+    if (!GetOpenDatabase(Database)) {
         return false;
     }
 
-    QSqlQuery query(db);
-    query.prepare(QStringLiteral("UPDATE %1 SET LastVisit = :lastVisit WHERE Login = :login")
+    QSqlQuery Query(Database);
+    Query.prepare(QStringLiteral("UPDATE %1 SET LastVisit = :lastVisit WHERE Login = :login")
                       .arg(AppConfig::DatabaseUsersTable));
-    const QDateTime localNow = QDateTime::currentDateTime();
-    query.bindValue(":lastVisit", localNow.toString("yyyy-MM-dd HH:mm:ss"));
-    query.bindValue(":login", login);
-    if (!query.exec()) {
-        qDebug() << "DataBase: не удалось обновить LastVisit:" << query.lastError().text();
+    const QDateTime LocalNow = QDateTime::currentDateTime();
+    Query.bindValue(":lastVisit", LocalNow.toString("yyyy-MM-dd HH:mm:ss"));
+    Query.bindValue(":login", Login);
+    if (!Query.exec()) {
+        qDebug() << "DataBase: не удалось обновить LastVisit:" << Query.lastError().text();
         return false;
     }
     return true;
@@ -293,129 +357,129 @@ bool AppDataBase::UpdateLastVisitForLogin(const QString& login)
 
 void AppDataBase::OnTrySettingsAnonymous()
 {
-    QSettings settings(AppConfig::GetSettingsPath(), QSettings::IniFormat);
-    settings.beginGroup("DataBase");
-        const QString host = settings.value("Host").toString().trimmed();
-        const QString portText = settings.value("Port").toString().trimmed();
-        const QString dbName = settings.value("Name").toString().trimmed();
-    settings.endGroup();
+    QSettings Settings(AppConfig::GetSettingsPath(), QSettings::IniFormat);
+    Settings.beginGroup("DataBase");
+        const QString Host = Settings.value("Host").toString().trimmed();
+        const QString PortText = Settings.value("Port").toString().trimmed();
+        const QString DbCatalogName = Settings.value("Name").toString().trimmed();
+    Settings.endGroup();
 
-    const QString kConnName = AppConfig::DatabaseName;
-    const QString driver = "QMYSQL";
+    const QString ConnRegistryName = AppConfig::DatabaseName;
+    const QString Driver = "QMYSQL";
 
-    bool openUserDialog = false;
-    bool showError = false;
-    QString errorText;
+    bool OpenUserDialog = false;
+    bool ShowError = false;
+    QString ErrorText;
 
-    if (QSqlDatabase::contains(kConnName)) {
+    if (QSqlDatabase::contains(ConnRegistryName)) {
         {
-            QSqlDatabase existing = QSqlDatabase::database(kConnName);
-            existing.close();
+            QSqlDatabase Existing = QSqlDatabase::database(ConnRegistryName);
+            Existing.close();
         }
-        QSqlDatabase::removeDatabase(kConnName);
+        QSqlDatabase::removeDatabase(ConnRegistryName);
     }
 
     {
-        QSqlDatabase db = QSqlDatabase::addDatabase(driver, kConnName);
-        db.setHostName(host);
-        db.setPort(portText.toInt());
-        db.setDatabaseName(dbName);
-        db.setUserName(QString());
-        db.setPassword(QString());
+        QSqlDatabase Database = QSqlDatabase::addDatabase(Driver, ConnRegistryName);
+        Database.setHostName(Host);
+        Database.setPort(PortText.toInt());
+        Database.setDatabaseName(DbCatalogName);
+        Database.setUserName(QString());
+        Database.setPassword(QString());
 
-        if (db.open()) {
+        if (Database.open()) {
             qDebug() << "MySQL: подключение успешно;"
-                     << "хост:" << db.hostName() << "порт:" << db.port() << "БД:" << db.databaseName();
-            db.close();
-            openUserDialog = true;
+                     << "хост:" << Database.hostName() << "порт:" << Database.port() << "БД:" << Database.databaseName();
+            Database.close();
+            OpenUserDialog = true;
         } else {
-            const QSqlError err = db.lastError();
-            const QString code = err.nativeErrorCode();
-            qDebug() << "MySQL:" << err.text() << "nativeErrorCode:" << code;
+            const QSqlError Err = Database.lastError();
+            const QString Code = Err.nativeErrorCode();
+            qDebug() << "MySQL:" << Err.text() << "nativeErrorCode:" << Code;
 
-            if (code == "2002" or code == "2003" or code == "2005") {
+            if (Code == "2002" or Code == "2003" or Code == "2005") {
                 qDebug() << "MySQL: не удалось подключиться к серверу по адресу"
-                         << QString("%1:%2").arg(host, portText);
-                showError = true;
-                errorText = QString("Не удалось присоединиться к серверу по %1")
-                                .arg(QString("%1:%2").arg(host, portText));
-            } else if (code == "1044" or code == "1045") {
+                         << QString("%1:%2").arg(Host, PortText);
+                ShowError = true;
+                ErrorText = QString("Не удалось присоединиться к серверу по %1")
+                                .arg(QString("%1:%2").arg(Host, PortText));
+            } else if (Code == "1044" or Code == "1045") {
                 qDebug() << "MySQL: Попытка присоединения к базе без пользователя.";
-                openUserDialog = true;
+                OpenUserDialog = true;
             }
         }
     }
 
-    QSqlDatabase::removeDatabase(kConnName);
-    emit SettingsAnonymousResult(openUserDialog, showError, errorText);
+    QSqlDatabase::removeDatabase(ConnRegistryName);
+    emit SettingsAnonymousResult(OpenUserDialog, ShowError, ErrorText);
 }
 
 void AppDataBase::OnTrySettingsWithUser()
 {
-    QSettings settings(AppConfig::GetSettingsPath(), QSettings::IniFormat);
-    settings.beginGroup("DataBase");
-        const QString host = settings.value("Host").toString().trimmed();
-        const QString portText = settings.value("Port").toString().trimmed();
-        const QString name = settings.value("Name").toString().trimmed();
-        const QString user = settings.value("User").toString().trimmed();
-        const QString password = settings.value("Password").toString().trimmed();
-    settings.endGroup();
+    QSettings Settings(AppConfig::GetSettingsPath(), QSettings::IniFormat);
+    Settings.beginGroup("DataBase");
+        const QString Host = Settings.value("Host").toString().trimmed();
+        const QString PortText = Settings.value("Port").toString().trimmed();
+        const QString CatalogName = Settings.value("Name").toString().trimmed();
+        const QString User = Settings.value("User").toString().trimmed();
+        const QString DbPassword = Settings.value("Password").toString().trimmed();
+    Settings.endGroup();
 
-    const QString kConnName = AppConfig::DatabaseName;
-    const QString driver = QStringLiteral("QMYSQL");
+    const QString ConnRegistryName = AppConfig::DatabaseName;
+    const QString Driver = QStringLiteral("QMYSQL");
 
-    if (QSqlDatabase::contains(kConnName)) {
+    if (QSqlDatabase::contains(ConnRegistryName)) {
         {
-            QSqlDatabase existing = QSqlDatabase::database(kConnName);
-            existing.close();
+            QSqlDatabase Existing = QSqlDatabase::database(ConnRegistryName);
+            Existing.close();
         }
-        QSqlDatabase::removeDatabase(kConnName);
+        QSqlDatabase::removeDatabase(ConnRegistryName);
     }
 
-    bool success = false;
-    bool unknownDb = false;
-    bool badAuth = false;
-    QString unknownMsg;
+    bool Success = false;
+    bool UnknownDb = false;
+    bool BadAuth = false;
+    QString UnknownMsg;
 
     {
-        QSqlDatabase db = QSqlDatabase::addDatabase(driver, kConnName);
-        db.setHostName(host);
-        db.setPort(portText.toInt());
-        db.setDatabaseName(name);
-        db.setUserName(user);
-        db.setPassword(password);
+        QSqlDatabase Database = QSqlDatabase::addDatabase(Driver, ConnRegistryName);
+        Database.setHostName(Host);
+        Database.setPort(PortText.toInt());
+        Database.setDatabaseName(CatalogName);
+        Database.setUserName(User);
+        Database.setPassword(DbPassword);
 
-        if (db.open()) {
+        if (Database.open()) {
             qDebug() << "MySQL: подключение успешно;"
-                     << "user:" << user
-                     << "host:" << db.hostName() << "port:" << db.port() << "db:" << db.databaseName();
-            success = true;
+                     << "user:" << User
+                     << "host:" << Database.hostName() << "port:" << Database.port() << "db:" << Database.databaseName();
+            Success = true;
         } else {
-            const QSqlError err = db.lastError();
-            const QString code = err.nativeErrorCode();
+            const QSqlError Err = Database.lastError();
+            const QString Code = Err.nativeErrorCode();
 
-            if (code == "1049") {
-                qDebug() << "MySQL: не удалось подключиться к базе данных — БД не найдена:" << name;
-                unknownDb = true;
-                unknownMsg = QString("Не удалось присоединиться к базе данных %1").arg(name);
+            if (Code == "1049") {
+                qDebug() << "MySQL: не удалось подключиться к базе данных — БД не найдена:" << CatalogName;
+                UnknownDb = true;
+                UnknownMsg = QString("Не удалось присоединиться к базе данных %1").arg(CatalogName);
             }
 
-            if (code == "1044" or code == "1045") {
+            if (Code == "1044" or Code == "1045") {
                 qDebug() << "MySQL: Неверный логин или пароль для доступа.";
-                badAuth = true;
+                BadAuth = true;
             }
 
             qDebug() << "MySQL: подключение не удалось:"
-                     << db.lastError().text()
-                     << "nativeErrorCode:" << db.lastError().nativeErrorCode();
+                     << Database.lastError().text()
+                     << "nativeErrorCode:" << Database.lastError().nativeErrorCode();
 
-            db.close();
+            Database.close();
         }
     }
 
-    if (!success) {
-        QSqlDatabase::removeDatabase(kConnName);
+    if (!Success) {
+        QSqlDatabase::removeDatabase(ConnRegistryName);
     }
 
-    emit SettingsUserResult(success, unknownDb, badAuth, unknownMsg);
+    emit SettingsUserResult(Success, UnknownDb, BadAuth, UnknownMsg);
 }

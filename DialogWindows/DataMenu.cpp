@@ -5,11 +5,13 @@
 #include "UploadError.h"
 
 #include <QAbstractButton>
+#include <QDate>
 #include <QFileDialog>
+#include <QHeaderView>
 #include <QMessageBox>
 
-DataMenu::DataMenu(QWidget *parent)
-    : QDialog(parent)
+DataMenu::DataMenu(QWidget *Parent)
+    : QDialog(Parent)
     , ui(new Ui::DataMenu)
 {
     ui->setupUi(this);
@@ -37,11 +39,11 @@ DataMenu::~DataMenu()
 
 void DataMenu::on_LoadButton_clicked()
 {
-    const QString path = QFileDialog::getOpenFileName(this,
+    const QString Path = QFileDialog::getOpenFileName(this,
                                                       "Выберите CSV-файл",
                                                       QString(),
                                                       "CSV (*.csv)");
-    if (path.isEmpty()) {
+    if (Path.isEmpty()) {
         return;
     }
 
@@ -52,18 +54,18 @@ void DataMenu::on_LoadButton_clicked()
         CSVWaitDialog.clear();
     }
 
-    auto *waitBox = new QMessageBox(QMessageBox::Information,
+    auto *WaitBox = new QMessageBox(QMessageBox::Information,
                                      "Загрузка CSV",
                                      "Обработка в процессе!",
                                      QMessageBox::Ok,
                                      this);
-    waitBox->setWindowModality(Qt::WindowModal);
-    SetupButton(waitBox);
-    CSVWaitDialog = waitBox;
+    WaitBox->setWindowModality(Qt::WindowModal);
+    SetupButton(WaitBox);
+    CSVWaitDialog = WaitBox;
 
-    waitBox->show();
+    WaitBox->show();
 
-    DataManager::instance().RequestProcessCSV(path);
+    DataManager::instance().RequestProcessCSV(Path);
 }
 
 void DataMenu::on_CloseButton_clicked()
@@ -71,7 +73,7 @@ void DataMenu::on_CloseButton_clicked()
     this->close();
 }
 
-void DataMenu::OnCSVProcessingFinished(bool success, const QString& message)
+void DataMenu::OnCSVProcessingFinished(bool Success, const QString& Message)
 {
     if (CSVWaitDialog) {
         CSVWaitDialog->deleteLater();
@@ -80,28 +82,28 @@ void DataMenu::OnCSVProcessingFinished(bool success, const QString& message)
 
     ui->LoadButton->setEnabled(true);
 
-    if (success)
+    if (Success)
     {
-        QMessageBox box(this);
-        box.setWindowTitle("Загрузка CSV");
-        box.setText("Обработка завершена!");
-        box.setIcon(QMessageBox::Information);
-        box.setStandardButtons(QMessageBox::Ok);
-        SetupButton(&box);
+        QMessageBox Box(QMessageBox::Information,
+            "Загрузка CSV",
+            "Обработка завершена!",
+            QMessageBox::Ok,
+            this);
+        SetupButton(&Box);
         
-        box.exec(); 
+        Box.exec(); 
     }
     else
     {
-        UploadError m(message, this);
-        m.exec();
+        UploadError Dialog(Message, this);
+        Dialog.exec();
     }
 
 }
 
-void DataMenu::SetupButton(QMessageBox *Box)
+void DataMenu::SetupButton(QMessageBox *MessageBox)
 {
-    if (QAbstractButton *okBtn = Box->button(QMessageBox::Ok)) {
-        okBtn->setStyleSheet("QPushButton { padding: 5px; }");
+    if (QAbstractButton *OkBtn = MessageBox->button(QMessageBox::Ok)) {
+        OkBtn->setStyleSheet("QPushButton { padding: 5px; }");
     }
 }

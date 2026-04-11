@@ -8,66 +8,71 @@
 
 DataManager& DataManager::instance()
 {
-    static DataManager inst;
-    return inst;
+    static DataManager Inst;
+    return Inst;
 }
 
-DataManager::DataManager(QObject *parent)
-    : QObject{parent}
+DataManager::DataManager(QObject *Parent)
+    : QObject{Parent}
 {}
 
 DataManager::~DataManager()
 {
-    if (m_thread) {
-        m_thread->quit();
-        m_thread->wait();
+    if (m_Thread) {
+        m_Thread->quit();
+        m_Thread->wait();
     }
-    delete m_CSVWorker;
-    m_CSVWorker = nullptr;
-    delete m_worker;
-    m_worker = nullptr;
-    m_thread = nullptr;
+    delete m_CsvWorker;
+    m_CsvWorker = nullptr;
+    delete m_Worker;
+    m_Worker = nullptr;
+    m_Thread = nullptr;
 }
 
 void DataManager::Init()
 {
-    if (m_initialized) {
+    if (m_Initialized) {
         return;
     }
-    m_initialized = true;
+    m_Initialized = true;
 
-    m_thread = new QThread(this);
-    m_worker = new AppDataBase();
-    m_worker->moveToThread(m_thread);
+    m_Thread = new QThread(this);
+    m_Worker = new AppDataBase();
+    m_Worker->moveToThread(m_Thread);
 
-    m_CSVWorker = new CSVWorker();
-    m_CSVWorker->moveToThread(m_thread);
+    m_CsvWorker = new CSVWorker();
+    m_CsvWorker->moveToThread(m_Thread);
 
     // Worker -> Manager
-    connect(m_worker, &AppDataBase::OnDataBaseStateSended, this, &DataManager::OnDataBaseStateSended);
-    connect(m_worker, &AppDataBase::OnLostConnection, this, &DataManager::OnLostConnection);
-    connect(m_worker, &AppDataBase::SettingsAnonymousResult, this, &DataManager::SettingsAnonymousResult);
-    connect(m_worker, &AppDataBase::SettingsUserResult, this, &DataManager::SettingsUserResult);
-    connect(m_worker, &AppDataBase::UsersListLoaded, this, &DataManager::UsersListLoaded);
-    connect(m_worker, &AppDataBase::UserDeleteFinished, this, &DataManager::UserDeleteFinished);
-    connect(m_worker, &AppDataBase::UserUpdateFinished, this, &DataManager::UserUpdateFinished);
-    connect(m_worker, &AppDataBase::UserCreateFinished, this, &DataManager::UserCreateFinished);
-    connect(m_worker, &AppDataBase::LoginVerifyFinished, this, &DataManager::LoginVerifyFinished);
-    connect(m_CSVWorker, &CSVWorker::CSVProcessingFinished, this, &DataManager::CSVProcessingFinished);
+    connect(m_Worker, &AppDataBase::OnDataBaseStateSended, this, &DataManager::OnDataBaseStateSended);
+    connect(m_Worker, &AppDataBase::OnLostConnection, this, &DataManager::OnLostConnection);
+    connect(m_Worker, &AppDataBase::SettingsAnonymousResult, this, &DataManager::SettingsAnonymousResult);
+    connect(m_Worker, &AppDataBase::SettingsUserResult, this, &DataManager::SettingsUserResult);
+    connect(m_Worker, &AppDataBase::UsersListLoaded, this, &DataManager::UsersListLoaded);
+    connect(m_Worker, &AppDataBase::ConsumerGroupsLoaded, this, &DataManager::ConsumerGroupsLoaded);
+    connect(m_Worker, &AppDataBase::UserDeleteFinished, this, &DataManager::UserDeleteFinished);
+    connect(m_Worker, &AppDataBase::UserUpdateFinished, this, &DataManager::UserUpdateFinished);
+    connect(m_Worker, &AppDataBase::UserCreateFinished, this, &DataManager::UserCreateFinished);
+    connect(m_Worker, &AppDataBase::LoginVerifyFinished, this, &DataManager::LoginVerifyFinished);
+    connect(m_CsvWorker, &CSVWorker::CSVProcessingFinished, this, &DataManager::CSVProcessingFinished);
+    
+    // Worker -> Worker
+    connect(m_CsvWorker, &CSVWorker::CSVGroupsToEnsure, m_Worker, &AppDataBase::OnEnsureGroupsFromCSV);
 
     // Manager -> Worker
-    connect(this, &DataManager::OnConnectToDataBase, m_worker, &AppDataBase::OnConnectRequested);
-    connect(this, &DataManager::OnDataBaseRequested, m_worker, &AppDataBase::SendDataBaseState);
-    connect(this, &DataManager::OnTrySettingsAnonymousRequested, m_worker, &AppDataBase::OnTrySettingsAnonymous);
-    connect(this, &DataManager::OnTrySettingsWithUserRequested, m_worker, &AppDataBase::OnTrySettingsWithUser);
-    connect(this, &DataManager::OnUsersListRequested, m_worker, &AppDataBase::GetAllUsers);
-    connect(this, &DataManager::OnDeleteUserRequested, m_worker, &AppDataBase::OnDeleteUserRequested);
-    connect(this, &DataManager::OnUpdateUserRequested, m_worker, &AppDataBase::OnUpdateUserRequested);
-    connect(this, &DataManager::OnCreateUserRequested, m_worker, &AppDataBase::OnCreateUserRequested);
-    connect(this, &DataManager::OnLoginVerifyRequested, m_worker, &AppDataBase::OnLoginVerifyRequested);
-    connect(this, &DataManager::OnProcessCSVRequested, m_CSVWorker, &CSVWorker::OnProcessCSVRequested);
+    connect(this, &DataManager::OnConnectToDataBase, m_Worker, &AppDataBase::OnConnectRequested);
+    connect(this, &DataManager::OnDataBaseRequested, m_Worker, &AppDataBase::SendDataBaseState);
+    connect(this, &DataManager::OnTrySettingsAnonymousRequested, m_Worker, &AppDataBase::OnTrySettingsAnonymous);
+    connect(this, &DataManager::OnTrySettingsWithUserRequested, m_Worker, &AppDataBase::OnTrySettingsWithUser);
+    connect(this, &DataManager::OnUsersListRequested, m_Worker, &AppDataBase::GetAllUsers);
+    connect(this, &DataManager::OnConsumerGroupsListRequested, m_Worker, &AppDataBase::GetAllConsumerGroups);
+    connect(this, &DataManager::OnDeleteUserRequested, m_Worker, &AppDataBase::OnDeleteUserRequested);
+    connect(this, &DataManager::OnUpdateUserRequested, m_Worker, &AppDataBase::OnUpdateUserRequested);
+    connect(this, &DataManager::OnCreateUserRequested, m_Worker, &AppDataBase::OnCreateUserRequested);
+    connect(this, &DataManager::OnLoginVerifyRequested, m_Worker, &AppDataBase::OnLoginVerifyRequested);
+    connect(this, &DataManager::OnProcessCSVRequested, m_CsvWorker, &CSVWorker::OnProcessCSVRequested);
 
-    m_thread->start();
+    m_Thread->start();
 }
 
 void DataManager::ConnectToDatabase()
@@ -95,28 +100,33 @@ void DataManager::RequestUsersList()
     emit OnUsersListRequested();
 }
 
-void DataManager::RequestDeleteUser(const QString& login)
+void DataManager::RequestConsumerGroupsList()
 {
-    emit OnDeleteUserRequested(login);
+    emit OnConsumerGroupsListRequested();
 }
 
-void DataManager::RequestUpdateUser(const QString& login, const QString& name, const QString& password)
+void DataManager::RequestDeleteUser(const QString& Login)
 {
-    emit OnUpdateUserRequested(login, name, password);
+    emit OnDeleteUserRequested(Login);
 }
 
-void DataManager::RequestCreateUser(const QString& login, const QString& name, const QString& role,
-                                    const QString& passwordHash)
+void DataManager::RequestUpdateUser(const QString& Login, const QString& Name, const QString& Password)
 {
-    emit OnCreateUserRequested(login, name, role, passwordHash);
+    emit OnUpdateUserRequested(Login, Name, Password);
 }
 
-void DataManager::RequestLoginVerify(const QString& login, const QString& password)
+void DataManager::RequestCreateUser(const QString& Login, const QString& Name, const QString& Role,
+                                    const QString& PasswordHash)
 {
-    emit OnLoginVerifyRequested(login, password);
+    emit OnCreateUserRequested(Login, Name, Role, PasswordHash);
 }
 
-void DataManager::RequestProcessCSV(const QString& filePath)
+void DataManager::RequestLoginVerify(const QString& Login, const QString& Password)
 {
-    emit OnProcessCSVRequested(filePath);
+    emit OnLoginVerifyRequested(Login, Password);
+}
+
+void DataManager::RequestProcessCSV(const QString& FilePath)
+{
+    emit OnProcessCSVRequested(FilePath);
 }

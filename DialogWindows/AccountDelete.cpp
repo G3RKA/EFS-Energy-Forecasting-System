@@ -3,8 +3,8 @@
 
 #include "DataManager.h"
 
-AccountDelete::AccountDelete(QWidget *parent, const QString& InLogin)
-    : QDialog(parent)
+AccountDelete::AccountDelete(QWidget *Parent, const QString& InLogin)
+    : QDialog(Parent)
     , ui(new Ui::AccountDelete)
 {
     ui->setupUi(this);
@@ -29,13 +29,13 @@ void AccountDelete::on_ConfirmButton_clicked()
     DataManager::instance().RequestDeleteUser(UserLogin);
 }
 
-void AccountDelete::OnUserDeleteFinished(bool success, const QString& login)
+void AccountDelete::OnUserDeleteFinished(bool Success, const QString& Login)
 {
-    if (login != UserLogin) {
+    if (Login != UserLogin) {
         return;
     }
     ui->ConfirmButton->setEnabled(true);
-    if (!success) {
+    if (!Success) {
         return;
     }
     emit UserDeleted(UserLogin);

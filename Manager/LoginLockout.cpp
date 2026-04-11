@@ -3,66 +3,67 @@
 #include "AppConfig.h"
 
 #include <QDateTime>
+#include <QSettings>
 
-bool LoginLockout::isLocked(int& remainingSecondsOut)
+bool LoginLockout::isLocked(int& RemainingSecondsOut)
 {
-    QSettings s(AppConfig::LoginLockoutSettings());
-    s.beginGroup(AppConfig::LoginSecurityGroup);
-    const qint64 until = s.value(AppConfig::LoginLockoutUntilMsKey, 0).toLongLong();
-    const qint64 now = QDateTime::currentMSecsSinceEpoch();
-    if (until <= 0) {
-        s.endGroup();
+    QSettings Settings(AppConfig::LoginLockoutSettings());
+    Settings.beginGroup(AppConfig::LoginSecurityGroup);
+    const qint64 Until = Settings.value(AppConfig::LoginLockoutUntilMsKey, 0).toLongLong();
+    const qint64 Now = QDateTime::currentMSecsSinceEpoch();
+    if (Until <= 0) {
+        Settings.endGroup();
         return false;
     }
-    if (now >= until) {
-        s.remove(AppConfig::LoginLockoutUntilMsKey);
-        s.remove(AppConfig::LoginLockoutAttemptsKey);
-        s.endGroup();
+    if (Now >= Until) {
+        Settings.remove(AppConfig::LoginLockoutUntilMsKey);
+        Settings.remove(AppConfig::LoginLockoutAttemptsKey);
+        Settings.endGroup();
         return false;
     }
 
-    remainingSecondsOut = ((until - now + 999) / 1000);
-    s.endGroup();
+    RemainingSecondsOut = ((Until - Now + 999) / 1000);
+    Settings.endGroup();
     return true;
 }
 
 void LoginLockout::registerInvalidCredentialsAttempt()
 {
-    QSettings s(AppConfig::LoginLockoutSettings());
-    s.beginGroup(AppConfig::LoginSecurityGroup);
-    const qint64 now = QDateTime::currentMSecsSinceEpoch();
-    const qint64 until = s.value(AppConfig::LoginLockoutUntilMsKey, 0).toLongLong();
-    if (until > now) {
-        s.endGroup();
+    QSettings Settings(AppConfig::LoginLockoutSettings());
+    Settings.beginGroup(AppConfig::LoginSecurityGroup);
+    const qint64 Now = QDateTime::currentMSecsSinceEpoch();
+    const qint64 Until = Settings.value(AppConfig::LoginLockoutUntilMsKey, 0).toLongLong();
+    if (Until > Now) {
+        Settings.endGroup();
         return;
     }
 
-    const int n = s.value(AppConfig::LoginLockoutAttemptsKey, 0).toInt() + 1;
-    s.setValue(AppConfig::LoginLockoutAttemptsKey, n);
-    if (n > 3) {
-        s.setValue(AppConfig::LoginLockoutUntilMsKey, now + AppConfig::LoginLockoutDurationMs);
+    const int AttemptCount = Settings.value(AppConfig::LoginLockoutAttemptsKey, 0).toInt() + 1;
+    Settings.setValue(AppConfig::LoginLockoutAttemptsKey, AttemptCount);
+    if (AttemptCount > 3) {
+        Settings.setValue(AppConfig::LoginLockoutUntilMsKey, Now + AppConfig::LoginLockoutDurationMs);
     }
-    s.endGroup();
+    Settings.endGroup();
 }
 
 void LoginLockout::clearOnSuccessfulLogin()
 {
-    QSettings s(AppConfig::LoginLockoutSettings());
-    s.beginGroup(AppConfig::LoginSecurityGroup);
-    s.remove(AppConfig::LoginLockoutAttemptsKey);
-    s.remove(AppConfig::LoginLockoutUntilMsKey);
-    s.endGroup();
+    QSettings Settings(AppConfig::LoginLockoutSettings());
+    Settings.beginGroup(AppConfig::LoginSecurityGroup);
+    Settings.remove(AppConfig::LoginLockoutAttemptsKey);
+    Settings.remove(AppConfig::LoginLockoutUntilMsKey);
+    Settings.endGroup();
 }
 
-QString LoginLockout::messageForRemainingSeconds(int remainingSeconds)
+QString LoginLockout::messageForRemainingSeconds(int RemainingSeconds)
 {
-    if (remainingSeconds <= 0) {
+    if (RemainingSeconds <= 0) {
         return "Вход на этом компьютере временно заблокирован.";
     }
-    const int m = remainingSeconds / 60;
-    const int sec = remainingSeconds % 60;
+    const int Minutes = RemainingSeconds / 60;
+    const int Seconds = RemainingSeconds % 60;
     return QString("Вход на этом компьютере заблокирован на 10 минут.\n"
                            "Осталось ждать: %1 мин. %2 сек.")
-        .arg(m)
-        .arg(sec, 2, 10, QLatin1Char('0'));
+        .arg(Minutes)
+        .arg(Seconds, 2, 10, QLatin1Char('0'));
 }

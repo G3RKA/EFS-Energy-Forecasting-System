@@ -13,7 +13,7 @@ class AccountCreate : public QDialog
     Q_OBJECT
 
 public:
-    explicit AccountCreate(QWidget *parent = nullptr);
+    explicit AccountCreate(QWidget *Parent = nullptr);
     ~AccountCreate();
 
 signals:
@@ -22,7 +22,7 @@ signals:
 private slots:
     void on_CloseButton_clicked();
     void on_ConnectButton_clicked();
-    void OnUserCreateFinished(bool success, const QString& login, bool duplicateLogin);
+    void OnUserCreateFinished(bool Success, const QString& Login, bool DuplicateLogin);
 
 private:
     bool IsLoginValid(const QString& Login);

@@ -12,7 +12,7 @@ class UploadError : public QDialog
     Q_OBJECT
 
 public:
-    explicit UploadError(const QString&, QWidget *parent = nullptr);
+    explicit UploadError(const QString&, QWidget *Parent = nullptr);
     ~UploadError();
 
 private slots:

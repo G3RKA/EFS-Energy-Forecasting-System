@@ -12,7 +12,7 @@ class SystemLabel : public QWidget
     Q_OBJECT
 
 public:
-    explicit SystemLabel(QWidget *parent = nullptr);
+    explicit SystemLabel(QWidget *Parent = nullptr);
     ~SystemLabel();
 
 private:

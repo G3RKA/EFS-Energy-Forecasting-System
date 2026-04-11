@@ -6,8 +6,8 @@
 
 #include <QRegularExpression>
 
-AccountCreate::AccountCreate(QWidget *parent)
-    : QDialog(parent)
+AccountCreate::AccountCreate(QWidget *Parent)
+    : QDialog(Parent)
     , ui(new Ui::AccountCreate)
 {
     ui->setupUi(this);
@@ -29,51 +29,51 @@ AccountCreate::~AccountCreate()
 
 void AccountCreate::on_ConnectButton_clicked()
 {
-    const QString login = ui->LoginEdit->text().trimmed();
-    const QString name = ui->NameEdit->text().trimmed();
-    const QString pass = ui->PassEdit->text().trimmed();
+    const QString Login = ui->LoginEdit->text().trimmed();
+    const QString Name = ui->NameEdit->text().trimmed();
+    const QString Pass = ui->PassEdit->text().trimmed();
 
-    QStringList failed;
-    if (!IsLoginValid(login)) {
-        failed << "Логин должен состоять только из букв латинского алфавита и цифр";
+    QStringList Failed;
+    if (!IsLoginValid(Login)) {
+        Failed << "Логин должен состоять только из букв латинского алфавита и цифр";
     }
-    if (!IsNameValid(name)) {
-        failed << "Имя должно состоять только из букв русского или латинского алфавита";
+    if (!IsNameValid(Name)) {
+        Failed << "Имя должно состоять только из букв русского или латинского алфавита";
     }
-    if (!IsPasswordValid(pass)) {
-        failed << "Пароль должен быть не менее 8 символов и содержать буквы латинского алфавита в верхнем, нижнем регистрах и цифры";
+    if (!IsPasswordValid(Pass)) {
+        Failed << "Пароль должен быть не менее 8 символов и содержать буквы латинского алфавита в верхнем, нижнем регистрах и цифры";
     }
 
-    if (!failed.isEmpty()) {
-        FailMessage = failed.join(".\n");
+    if (!Failed.isEmpty()) {
+        FailMessage = Failed.join(".\n");
         FailMessage += '.';
         ui->ErrorLabel->setText(FailMessage);
         ui->ErrorLabel->setVisible(true);
         return;
     }
 
-    const QString passhash = QString::fromStdString(BCrypt::generateHash(pass.toStdString()));
+    const QString PassHash = QString::fromStdString(BCrypt::generateHash(Pass.toStdString()));
 
     ui->ErrorLabel->setVisible(false);
-    PendingCreateLogin = login;
+    PendingCreateLogin = Login;
     ui->ConnectButton->setEnabled(false);
-    DataManager::instance().RequestCreateUser(login, name, ui->RoleBox->currentText(), passhash);
+    DataManager::instance().RequestCreateUser(Login, Name, ui->RoleBox->currentText(), PassHash);
 }
 
-void AccountCreate::OnUserCreateFinished(bool success, const QString& login, bool duplicateLogin)
+void AccountCreate::OnUserCreateFinished(bool Success, const QString& Login, bool DuplicateLogin)
 {
-    if (login != PendingCreateLogin) {
+    if (Login != PendingCreateLogin) {
         return;
     }
     ui->ConnectButton->setEnabled(true);
 
-    if (success) {
+    if (Success) {
         emit tableUpdateRequested();
         accept();
         return;
     }
 
-    if (duplicateLogin) {
+    if (DuplicateLogin) {
         ui->ErrorLabel->setText("Логин должен быть уникальным.\n"+FailMessage);
         ui->ErrorLabel->setVisible(true);
         return;
@@ -87,19 +87,19 @@ void AccountCreate::on_CloseButton_clicked()
 
 bool AccountCreate::IsLoginValid(const QString& Login)
 {
-    const QRegularExpression pattern(R"(^[A-Za-z0-9]+$)");
-    return pattern.match(Login).hasMatch();
+    const QRegularExpression Pattern(R"(^[A-Za-z0-9]+$)");
+    return Pattern.match(Login).hasMatch();
 }
 
 bool AccountCreate::IsPasswordValid(const QString& Password)
 {
-    const QRegularExpression pattern(R"(^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$)");
-    return pattern.match(Password).hasMatch();
+    const QRegularExpression Pattern(R"(^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$)");
+    return Pattern.match(Password).hasMatch();
 }
 
 bool AccountCreate::IsNameValid(const QString& Name)
 {
-    static const QRegularExpression pattern(R"(^[\p{Latin}\p{Cyrillic}]{1,45}$)",
+    static const QRegularExpression Pattern(R"(^[\p{Latin}\p{Cyrillic}]{1,45}$)",
                                             QRegularExpression::UseUnicodePropertiesOption);
-    return pattern.match(Name).hasMatch();
+    return Pattern.match(Name).hasMatch();
 }

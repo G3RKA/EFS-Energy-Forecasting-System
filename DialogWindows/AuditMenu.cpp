@@ -1,8 +1,11 @@
 #include "AuditMenu.h"
 #include "UI/ui_AuditMenu.h"
 
-AuditMenu::AuditMenu(QWidget *parent)
-    : QDialog(parent)
+#include <QDate>
+#include <QHeaderView>
+
+AuditMenu::AuditMenu(QWidget *Parent)
+    : QDialog(Parent)
     , ui(new Ui::AuditMenu)
 {
     ui->setupUi(this);

@@ -20,11 +20,12 @@ public:
 
     static const QString DatabaseUsersTable;
     static const QString DatabaseLogsTable;
+    static const QString DatabaseGroupTable;
 
     static bool IsSuperAdmin(const QString& Login);
     static bool CheckSAPassword(const QString& Login, const QString& Password);
     static QString GetSettingsPath();
-    static QString ConvertRoleToDB(const QString& role);
+    static QString ConvertRoleToDB(const QString& Role);
 
     static QSettings LoginLockoutSettings();
     static const QString LoginSecurityGroup;

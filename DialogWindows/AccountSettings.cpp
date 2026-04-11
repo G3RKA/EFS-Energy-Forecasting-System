@@ -15,8 +15,8 @@
 #include <QPushButton>
 #include <QTableWidgetItem>
 
-AccountSettings::AccountSettings(QWidget *parent)
-    : QDialog(parent)
+AccountSettings::AccountSettings(QWidget *Parent)
+    : QDialog(Parent)
     , ui(new Ui::AccountSettings)
 {
     ui->setupUi(this);
@@ -56,130 +56,130 @@ void AccountSettings::LoadUsersFromDatabase()
     DataManager::instance().RequestUsersList();
 }
 
-void AccountSettings::LoadUsers(const QVector<AccountUserRow>& users)
+void AccountSettings::LoadUsers(const QVector<AccountUserRow>& Users)
 {
     ui->AccountTable->setRowCount(0);
 
-    for (const AccountUserRow& user : users) {
-        const int row = ui->AccountTable->rowCount();
-        ui->AccountTable->insertRow(row);
+    for (const AccountUserRow& User : Users) {
+        const int Row = ui->AccountTable->rowCount();
+        ui->AccountTable->insertRow(Row);
 
-        auto makeItem = [](const QString &text) {
-            auto *item = new QTableWidgetItem(text);
-            item->setFlags(item->flags() & ~Qt::ItemIsEditable);
-            item->setTextAlignment(Qt::AlignCenter);
-            return item;
+        auto MakeItem = [](const QString &Text) {
+            auto *Item = new QTableWidgetItem(Text);
+            Item->setFlags(Item->flags() & ~Qt::ItemIsEditable);
+            Item->setTextAlignment(Qt::AlignCenter);
+            return Item;
         };
-        auto makeButtonContainer = [this](QPushButton* button) {
-            auto *container = new QWidget(ui->AccountTable);
-            auto *layout = new QHBoxLayout(container);
-            layout->setContentsMargins(6, 3, 6, 3);
-            layout->setSpacing(0);
-            layout->addWidget(button);
-            return container;
+        auto MakeButtonContainer = [this](QPushButton* Button) {
+            auto *Container = new QWidget(ui->AccountTable);
+            auto *Layout = new QHBoxLayout(Container);
+            Layout->setContentsMargins(6, 3, 6, 3);
+            Layout->setSpacing(0);
+            Layout->addWidget(Button);
+            return Container;
         };
 
-        const QString& Login = user.login;
-        const QString& Name = user.name;
+        const QString& LoginText = User.Login;
+        const QString& NameText = User.Name;
 
-        ui->AccountTable->setItem(row, 0, makeItem(Login));
-        ui->AccountTable->setItem(row, 1, makeItem(Name));
-        ui->AccountTable->setItem(row, 2, makeItem(FormatRole(QVariant(user.role))));
-        ui->AccountTable->setItem(row, 3, makeItem(FormatLastVisit(user.lastVisit)));
-        QPushButton *editButton = new QPushButton("Изменить", ui->AccountTable);
-        QPushButton *deleteButton = new QPushButton("Удалить", ui->AccountTable);
+        ui->AccountTable->setItem(Row, 0, MakeItem(LoginText));
+        ui->AccountTable->setItem(Row, 1, MakeItem(NameText));
+        ui->AccountTable->setItem(Row, 2, MakeItem(FormatRole(QVariant(User.Role))));
+        ui->AccountTable->setItem(Row, 3, MakeItem(FormatLastVisit(User.LastVisit)));
+        QPushButton *EditButton = new QPushButton("Изменить", ui->AccountTable);
+        QPushButton *DeleteButton = new QPushButton("Удалить", ui->AccountTable);
 
-        SetActionButtonProperties(editButton, Login);
-        editButton->setProperty("Name", Name);
-        SetActionButtonProperties(deleteButton, Login);
+        SetActionButtonProperties(EditButton, LoginText);
+        EditButton->setProperty("Name", NameText);
+        SetActionButtonProperties(DeleteButton, LoginText);
 
-        connect(editButton, &QPushButton::clicked, this, [this, editButton]() {
-            OnEditButtonClicked(editButton);
+        connect(EditButton, &QPushButton::clicked, this, [this, EditButton]() {
+            OnEditButtonClicked(EditButton);
         });
 
-        connect(deleteButton, &QPushButton::clicked, this, [this, deleteButton]() {
-            OnDeleteButtonClicked(deleteButton);
+        connect(DeleteButton, &QPushButton::clicked, this, [this, DeleteButton]() {
+            OnDeleteButtonClicked(DeleteButton);
         });
 
-        ui->AccountTable->setCellWidget(row, 4, makeButtonContainer(editButton));
-        ui->AccountTable->setCellWidget(row, 5, makeButtonContainer(deleteButton));
+        ui->AccountTable->setCellWidget(Row, 4, MakeButtonContainer(EditButton));
+        ui->AccountTable->setCellWidget(Row, 5, MakeButtonContainer(DeleteButton));
     }
 
     ui->AccountTable->resizeRowsToContents();
 }
 
-void AccountSettings::EditUserRowByLogin(const QString& login, const QString& name)
+void AccountSettings::EditUserRowByLogin(const QString& Login, const QString& Name)
 {
-    for (int row = 0; row < ui->AccountTable->rowCount(); ++row) {
-        QTableWidgetItem* loginItem = ui->AccountTable->item(row, 0);
-        if (!loginItem || loginItem->text() != login) {
+    for (int Row = 0; Row < ui->AccountTable->rowCount(); ++Row) {
+        QTableWidgetItem* LoginItem = ui->AccountTable->item(Row, 0);
+        if (!LoginItem || LoginItem->text() != Login) {
             continue;
         }
 
-        QTableWidgetItem* nameItem = ui->AccountTable->item(row, 1);
-        if (nameItem) {
-            nameItem->setText(name);
+        QTableWidgetItem* NameItem = ui->AccountTable->item(Row, 1);
+        if (NameItem) {
+            NameItem->setText(Name);
         }
 
-        if (QWidget* container = ui->AccountTable->cellWidget(row, 4)) {
-            if (QPushButton* editButton = container->findChild<QPushButton*>()) {
-                editButton->setProperty("Name", name);
+        if (QWidget* Container = ui->AccountTable->cellWidget(Row, 4)) {
+            if (QPushButton* EditButton = Container->findChild<QPushButton*>()) {
+                EditButton->setProperty("Name", Name);
             }
         }
         return;
     }
 }
 
-void AccountSettings::RemoveUserRowByLogin(const QString& login)
+void AccountSettings::RemoveUserRowByLogin(const QString& Login)
 {
-    for (int row = 0; row < ui->AccountTable->rowCount(); ++row) {
-        QTableWidgetItem* item = ui->AccountTable->item(row, 0);
-        if (item && item->text() == login) {
-            ui->AccountTable->removeRow(row);
+    for (int Row = 0; Row < ui->AccountTable->rowCount(); ++Row) {
+        QTableWidgetItem* Item = ui->AccountTable->item(Row, 0);
+        if (Item && Item->text() == Login) {
+            ui->AccountTable->removeRow(Row);
             return;
         }
     }
 }
 
-void AccountSettings::SetActionButtonProperties(QPushButton* button, const QString& login)
+void AccountSettings::SetActionButtonProperties(QPushButton* Button, const QString& Login)
 {
-    button->setProperty("Login", login);
+    Button->setProperty("Login", Login);
 }
 
-void AccountSettings::OnEditButtonClicked(QPushButton* button)
+void AccountSettings::OnEditButtonClicked(QPushButton* Button)
 {
-    const QString login = button->property("Login").toString();
-    const QString name = button->property("Name").toString();
-    qDebug() << "Нажата кнопка Изменить:" << " login =" << login;
+    const QString Login = Button->property("Login").toString();
+    const QString Name = Button->property("Name").toString();
+    qDebug() << "Нажата кнопка Изменить:" << " login =" << Login;
 
-    AccountEdit menu(this, login, name);
-    connect(&menu, &AccountEdit::UserEdited, this, &AccountSettings::EditUserRowByLogin);
-    menu.exec();
+    AccountEdit Menu(this, Login, Name);
+    connect(&Menu, &AccountEdit::UserEdited, this, &AccountSettings::EditUserRowByLogin);
+    Menu.exec();
 }
 
-void AccountSettings::OnDeleteButtonClicked(QPushButton* button)
+void AccountSettings::OnDeleteButtonClicked(QPushButton* Button)
 {
-    const QString login = button->property("Login").toString();
-    qDebug() << "Нажата кнопка Удалить:" << " login =" << login;
+    const QString Login = Button->property("Login").toString();
+    qDebug() << "Нажата кнопка Удалить:" << " login =" << Login;
 
-    AccountDelete menu(this, login);
-    connect(&menu, &AccountDelete::UserDeleted, this, &AccountSettings::RemoveUserRowByLogin);
-    menu.exec();
+    AccountDelete Menu(this, Login);
+    connect(&Menu, &AccountDelete::UserDeleted, this, &AccountSettings::RemoveUserRowByLogin);
+    Menu.exec();
 }
 
-QString AccountSettings::FormatLastVisit(const QVariant &value)
+QString AccountSettings::FormatLastVisit(const QVariant &Value)
 {
-    if (value.isNull() || !value.isValid())
+    if (Value.isNull() || !Value.isValid())
         return "Неизвестно";
-    const QDateTime dt = value.toDateTime();
-    if (dt.isValid())
-       return QLocale().toString(dt, QLocale::ShortFormat);
-    return value.toString();
+    const QDateTime Dt = Value.toDateTime();
+    if (Dt.isValid())
+       return QLocale().toString(Dt, QLocale::ShortFormat);
+    return Value.toString();
 }
 
-QString AccountSettings::FormatRole(const QVariant &value)
+QString AccountSettings::FormatRole(const QVariant &Value)
 {
-    QString RoleStr = value.toString();
+    QString RoleStr = Value.toString();
 
     if (RoleStr == AppConfig::DatabaseAnalystStr)
     {

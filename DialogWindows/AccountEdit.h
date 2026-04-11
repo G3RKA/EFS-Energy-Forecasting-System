@@ -12,16 +12,16 @@ class AccountEdit : public QDialog
     Q_OBJECT
 
 public:
-    explicit AccountEdit(QWidget *parent = nullptr, const QString& Login = QString(), const QString& InName = QString());
+    explicit AccountEdit(QWidget *Parent = nullptr, const QString& Login = QString(), const QString& InName = QString());
     ~AccountEdit();
 
 signals:
-    void UserEdited(const QString& login, const QString& name);
+    void UserEdited(const QString& Login, const QString& Name);
 
 private slots:
     void on_CancelButton_clicked();
     void on_SaveButton_clicked();
-    void OnUserUpdateFinished(bool success, const QString& login, const QString& name);
+    void OnUserUpdateFinished(bool Success, const QString& Login, const QString& Name);
 
 private:
     bool IsPasswordValid(const QString& Password);

@@ -12,11 +12,11 @@ class DataBaseUserSettings : public QDialog
     Q_OBJECT
 
 public:
-    explicit DataBaseUserSettings(QWidget *parent = nullptr);
+    explicit DataBaseUserSettings(QWidget *Parent = nullptr);
     ~DataBaseUserSettings();
 
 signals:
-    void ConnectRequested(const QString& user, const QString& password);
+    void ConnectRequested(const QString& User, const QString& Password);
 
 public slots:
     void OnCloseUserConnection();

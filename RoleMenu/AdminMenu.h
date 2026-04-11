@@ -12,7 +12,7 @@ class AdminMenu : public QWidget
     Q_OBJECT
 
 public:
-    explicit AdminMenu(QWidget *parent = nullptr);
+    explicit AdminMenu(QWidget *Parent = nullptr);
     ~AdminMenu();
 
 private slots:

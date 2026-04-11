@@ -9,18 +9,19 @@ class CSVWorker : public QObject
 {
     Q_OBJECT
 public:
-    explicit CSVWorker(QObject *parent = nullptr);
+    explicit CSVWorker(QObject *Parent = nullptr);
 
 public slots:
-    void OnProcessCSVRequested(const QString& filePath);
+    void OnProcessCSVRequested(const QString& FilePath);
 
 signals:
-    void CSVProcessingFinished(bool success, const QString& message);
+    void CSVProcessingFinished(bool Success, const QString& Message);
+    void CSVGroupsToEnsure(const QStringList& GroupNames);
 
 private:
-    QStringList SplitCSVLine(const QString& line);
-    bool HeaderMatchesExpected(const QStringList& cells);
-    bool DataRowIsValid(const QStringList& cells);
+    QStringList SplitCSVLine(const QString& Line);
+    bool HeaderMatchesExpected(const QStringList& Cells);
+    bool DataRowIsValid(const QStringList& Cells);
 };
 
 #endif // CSVWORKER_H

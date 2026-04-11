@@ -1,8 +1,10 @@
 #include "EnergyMenu.h"
 #include "UI/ui_EnergyMenu.h"
 
-EnergyMenu::EnergyMenu(QWidget *parent)
-    : QWidget(parent)
+#include <QHeaderView>
+
+EnergyMenu::EnergyMenu(QWidget *Parent)
+    : QWidget(Parent)
     , ui(new Ui::EnergyMenu)
 {
     ui->setupUi(this);

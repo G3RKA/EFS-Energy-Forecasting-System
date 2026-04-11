@@ -1,5 +1,6 @@
 #include "MainMenu/MainWindow.h"
 #include "DataTypes/AccountUserRow.h"
+#include "DataTypes/ConsumerGroupRow.h"
 #include "Manager/DataManager.h"
 
 #include <QFontDatabase>
@@ -7,14 +8,14 @@
 #include <QApplication>
 #include <qdatetime.h>
 
-void InitAppFont(QApplication& app)
+void InitAppFont(QApplication& App)
 {
-    int FontID = QFontDatabase::addApplicationFont(":/Resources/Fonts/Merriweather.ttf");
+    int FontId = QFontDatabase::addApplicationFont(":/Resources/Fonts/Merriweather.ttf");
 
-    if (FontID != -1)
+    if (FontId != -1)
     {
-        QString family = QFontDatabase::applicationFontFamilies(FontID).at(0);
-        app.setFont(QFont(family));
+        QString Family = QFontDatabase::applicationFontFamilies(FontId).at(0);
+        App.setFont(QFont(Family));
     }
     else
     {
@@ -25,24 +26,25 @@ void InitAppFont(QApplication& app)
 int main(int argc, char *argv[])
 {
 
-    QApplication a(argc, argv);
+    QApplication App(argc, argv);
     QCoreApplication::setOrganizationName("EFS_Project");
     QCoreApplication::setApplicationName("EFS");
 
-    InitAppFont(a);
+    InitAppFont(App);
 
     qRegisterMetaType<QVector<AccountUserRow>>("QVector<AccountUserRow>");
+    qRegisterMetaType<QVector<ConsumerGroupRow>>("QVector<ConsumerGroupRow>");
 
     DataManager::instance().Init();
-    MainWindow w;
+    MainWindow W;
 
-    QObject::connect(&DataManager::instance(), &DataManager::OnLostConnection, &w, &MainWindow::BackToAuthMenu);
+    QObject::connect(&DataManager::instance(), &DataManager::OnLostConnection, &W, &MainWindow::BackToAuthMenu);
 
     DataManager::instance().ConnectToDatabase();
 
-    w.show();
+    W.show();
 
     qDebug() << QDateTime::currentDateTime();
 
-    return a.exec(); 
+    return App.exec(); 
 }

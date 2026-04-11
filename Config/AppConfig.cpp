@@ -18,6 +18,7 @@ const QString AppConfig::DatabaseEnergyStr = "energy";
 
 const QString AppConfig::DatabaseUsersTable = "user";
 const QString AppConfig::DatabaseLogsTable = "logs";
+const QString AppConfig::DatabaseGroupTable = "consumergroup";
 
 const QString AppConfig::DatabaseGroup = "DataBase";
 const QString AppConfig::DatabaseHostKey = "Host";
@@ -59,15 +60,15 @@ QString AppConfig::GetSettingsPath()
     return QDir(DataRoot).filePath("Settings.ini");
 }
 
-QString AppConfig::ConvertRoleToDB(const QString& role)
+QString AppConfig::ConvertRoleToDB(const QString& Role)
 {
-    const QString normalizedRole = role.trimmed().toLower();
+    const QString NormalizedRole = Role.trimmed().toLower();
 
-    if (normalizedRole == QString("аналитик").toLower() || normalizedRole == DatabaseAnalystStr) {
+    if (NormalizedRole == QString("аналитик").toLower() || NormalizedRole == DatabaseAnalystStr) {
         return DatabaseAnalystStr;
     }
 
-    if (normalizedRole == QString("энергетик").toLower() || normalizedRole == DatabaseEnergyStr) {
+    if (NormalizedRole == QString("энергетик").toLower() || NormalizedRole == DatabaseEnergyStr) {
         return DatabaseEnergyStr;
     }
 

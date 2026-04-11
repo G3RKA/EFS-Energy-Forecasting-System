@@ -5,8 +5,8 @@
 #include <QLineEdit>
 #include <QSettings>
 
-DataBaseUserSettings::DataBaseUserSettings(QWidget *parent)
-    : QDialog(parent)
+DataBaseUserSettings::DataBaseUserSettings(QWidget *Parent)
+    : QDialog(Parent)
     , ui(new Ui::DataBaseUserSettings)
 {
     ui->setupUi(this);
@@ -59,9 +59,9 @@ void DataBaseUserSettings::ConnectionDataChanged()
 
 void DataBaseUserSettings::SetupDBStatus()
 {
-    QSettings settings(AppConfig::GetSettingsPath(), QSettings::IniFormat);
-    settings.beginGroup("DataBase");
-        ui->LoginEdit->setText(settings.value("User").toString().trimmed());
-        ui->PassEdit->setText(settings.value("Password").toString());
-    settings.endGroup();
+    QSettings Settings(AppConfig::GetSettingsPath(), QSettings::IniFormat);
+    Settings.beginGroup("DataBase");
+        ui->LoginEdit->setText(Settings.value("User").toString().trimmed());
+        ui->PassEdit->setText(Settings.value("Password").toString());
+    Settings.endGroup();
 }
