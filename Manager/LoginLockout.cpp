@@ -61,8 +61,8 @@ QString LoginLockout::messageForRemainingSeconds(int remainingSeconds)
     }
     const int m = remainingSeconds / 60;
     const int sec = remainingSeconds % 60;
-    return QStringLiteral("Вход на этом компьютере заблокирован на 10 минут.\n"
-                           "Осталось ждать: %1 мин %2 сек.")
+    return QString("Вход на этом компьютере заблокирован на 10 минут.\n"
+                           "Осталось ждать: %1 мин. %2 сек.")
         .arg(m)
         .arg(sec, 2, 10, QLatin1Char('0'));
 }

@@ -4,7 +4,7 @@
 #include <QDialog>
 #include <QVector>
 
-#include "AccountUserRow.h"
+#include "DataTypes/AccountUserRow.h"
 
 class QPushButton;
 

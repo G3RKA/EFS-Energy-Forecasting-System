@@ -3,7 +3,7 @@
 #include "UI/ui_DataBaseSettings.h"
 
 #include "DataBaseUserSettings.h"
-#include "DataBaseManager.h"
+#include "DataManager.h"
 
 #include <QIntValidator>
 #include <QRegularExpression>
@@ -20,17 +20,17 @@ DataBaseSettings::DataBaseSettings(QWidget *parent)
     setWindowFlags(Qt::Dialog | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
 
     SetupDBStatus();
-    DataBaseManager::instance().RequestDBState();
+    DataManager::instance().RequestDBState();
     SetupInputConstraints();
 
     ui->ErrorLabel->setVisible(false);
 
     ui->ConnectButton->setDisabled(true);
 
-    connect(&DataBaseManager::instance(), &DataBaseManager::OnDataBaseStateSended, this, &DataBaseSettings::UpdateDBState);
-    connect(&DataBaseManager::instance(), &DataBaseManager::SettingsAnonymousResult, this,
+    connect(&DataManager::instance(), &DataManager::OnDataBaseStateSended, this, &DataBaseSettings::UpdateDBState);
+    connect(&DataManager::instance(), &DataManager::SettingsAnonymousResult, this,
             &DataBaseSettings::OnSettingsAnonymousResult);
-    connect(&DataBaseManager::instance(), &DataBaseManager::SettingsUserResult, this, &DataBaseSettings::OnSettingsUserResult);
+    connect(&DataManager::instance(), &DataManager::SettingsUserResult, this, &DataBaseSettings::OnSettingsUserResult);
 
     connect(ui->HostEdit, &QLineEdit::textEdited, this, &DataBaseSettings::ConnectionDataChanged);
     connect(ui->PortEdit, &QLineEdit::textEdited, this, &DataBaseSettings::ConnectionDataChanged);
@@ -53,7 +53,7 @@ void DataBaseSettings::on_ConnectButton_clicked()
 {
     ui->ConnectButton->setDisabled(true);
     SaveDatabaseConnectionSettings();
-    DataBaseManager::instance().RequestTrySettingsAnonymous();
+    DataManager::instance().RequestTrySettingsAnonymous();
 }
 
 void DataBaseSettings::UpdateDBState(bool connected)
@@ -78,14 +78,14 @@ void DataBaseSettings::OnSettingsAnonymousResult(bool openUserDialog, bool showE
         menu.exec();
     }
 
-    DataBaseManager::instance().RequestDBState();
+    DataManager::instance().RequestDBState();
     ui->ConnectButton->setDisabled(false);
 }
 
 void DataBaseSettings::OnSettingsUserResult(bool success, bool unknownDatabase, bool badCredentials,
                                             const QString& unknownDbMessage)
 {
-    DataBaseManager::instance().RequestDBState();
+    DataManager::instance().RequestDBState();
 
     if (success) {
         ui->ErrorLabel->setVisible(false);
@@ -128,7 +128,7 @@ void DataBaseSettings::OnDatabaseUserSubmitted(const QString& user, const QStrin
     settings.endGroup();
     settings.sync();
 
-    DataBaseManager::instance().RequestTrySettingsWithUser();
+    DataManager::instance().RequestTrySettingsWithUser();
 }
 
 void DataBaseSettings::SetupDBStatus()

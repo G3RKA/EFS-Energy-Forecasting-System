@@ -1,19 +1,20 @@
-#ifndef DATABASEMANAGER_H
-#define DATABASEMANAGER_H
+#ifndef DATAMANAGER_H
+#define DATAMANAGER_H
 
 #include <QObject>
 #include <QVector>
 
-#include "AccountUserRow.h"
+#include "DataTypes/AccountUserRow.h"
 
 class QThread;
 class AppDataBase;
+class CSVWorker;
 
-class DataBaseManager : public QObject
+class DataManager : public QObject
 {
     Q_OBJECT
 public:
-    static DataBaseManager& instance();
+    static DataManager& instance();
 
     void Init();
     void ConnectToDatabase();
@@ -25,11 +26,12 @@ public:
     void RequestUpdateUser(const QString& login, const QString& name, const QString& password);
     void RequestCreateUser(const QString& login, const QString& name, const QString& role, const QString& passwordHash);
     void RequestLoginVerify(const QString& login, const QString& password);
+    void RequestProcessCSV(const QString& filePath);
 
-    ~DataBaseManager() override;
+    ~DataManager() override;
 
-    DataBaseManager(const DataBaseManager&) = delete;
-    DataBaseManager& operator=(const DataBaseManager&) = delete;
+    DataManager(const DataManager&) = delete;
+    DataManager& operator=(const DataManager&) = delete;
 
 signals:
     // Input
@@ -42,6 +44,7 @@ signals:
     void OnUpdateUserRequested(const QString& login, const QString& name, const QString& password);
     void OnCreateUserRequested(const QString& login, const QString& name, const QString& role, const QString& passwordHash);
     void OnLoginVerifyRequested(const QString& login, const QString& password);
+    void OnProcessCSVRequested(const QString& filePath);
 
     //  Output
     void OnLostConnection();
@@ -53,13 +56,15 @@ signals:
     void UserUpdateFinished(bool success, const QString& login, const QString& name);
     void UserCreateFinished(bool success, const QString& login, bool duplicateLogin);
     void LoginVerifyFinished(bool success, const QString& dbRole, const QString& displayName, bool invalidCredentials);
+    void CSVProcessingFinished(bool success, const QString& message);
 
 private:
-    explicit DataBaseManager(QObject *parent = nullptr);
+    explicit DataManager(QObject *parent = nullptr);
 
     QThread* m_thread = nullptr;
     AppDataBase* m_worker = nullptr;
+    CSVWorker* m_CSVWorker = nullptr;
     bool m_initialized = false;
 };
 
-#endif // DATABASEMANAGER_H
+#endif // DATAMANAGER_H

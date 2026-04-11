@@ -5,7 +5,7 @@
 #include "AccountDelete.h"
 #include "AccountEdit.h"
 #include "AppConfig.h"
-#include "DataBaseManager.h"
+#include "DataManager.h"
 
 #include <QDateTime>
 #include <QDebug>
@@ -29,7 +29,7 @@ AccountSettings::AccountSettings(QWidget *parent)
     ui->AccountTable->setWordWrap(true);
     ui->AccountTable->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
-    connect(&DataBaseManager::instance(), &DataBaseManager::UsersListLoaded, this, &AccountSettings::LoadUsers);
+    connect(&DataManager::instance(), &DataManager::UsersListLoaded, this, &AccountSettings::LoadUsers);
 
     LoadUsersFromDatabase();
 }
@@ -53,7 +53,7 @@ void AccountSettings::on_CreateButton_clicked()
 
 void AccountSettings::LoadUsersFromDatabase()
 {
-    DataBaseManager::instance().RequestUsersList();
+    DataManager::instance().RequestUsersList();
 }
 
 void AccountSettings::LoadUsers(const QVector<AccountUserRow>& users)

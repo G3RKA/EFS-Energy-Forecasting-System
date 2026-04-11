@@ -7,7 +7,7 @@
 #include <QLineEdit>
 
 #include "AppConfig.h"
-#include "DataBaseManager.h"
+#include "DataManager.h"
 #include "LoginLockout.h"
 #include "AdminMenu.h"
 #include "AnalystMenu.h"
@@ -24,7 +24,7 @@ MainWindow::MainWindow(QWidget *parent)
     DisableLabels();
     ui->PageWidget->setCurrentIndex(0);
 
-    connect(&DataBaseManager::instance(), &DataBaseManager::LoginVerifyFinished,
+    connect(&DataManager::instance(), &DataManager::LoginVerifyFinished,
             this, &MainWindow::OnLoginVerifyFinished);
 }
 
@@ -97,7 +97,7 @@ void MainWindow::on_LogInButton_clicked()
         return;
     }
 
-    DataBaseManager::instance().RequestLoginVerify(LoginText.trimmed(), PasswordText);
+    DataManager::instance().RequestLoginVerify(LoginText.trimmed(), PasswordText);
 }
 
 void MainWindow::OnLoginVerifyFinished(bool success, const QString& dbRole, const QString& displayName,
@@ -163,7 +163,7 @@ void MainWindow::ShowCredentialError()
     if (LoginLockout::isLocked(remainingSec)) {
         ui->ErrorLabel->setText(LoginLockout::messageForRemainingSeconds(remainingSec));
     } else {
-        ui->ErrorLabel->setText(QStringLiteral("Неверный логин или пароль"));
+        ui->ErrorLabel->setText(QString("Неверный логин или пароль"));
     }
     ui->ErrorLabel->setVisible(true);
 }

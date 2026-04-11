@@ -17,14 +17,16 @@ set(ROLE RoleMenu)
 set(CUSTOM CustomWidgets)
 set(DIALOG DialogWindows)
 set(CONFIG Config)
+set(MANAGER Manager)
 
 
 set(PROJECT_HEADERS
-    ${CONFIG}/AccountUserRow.h
+    ${CONFIG}/DataTypes/AccountUserRow.h
     ${CONFIG}/AppConfig.h
-    ${CONFIG}/AppDataBase.h
-    ${CONFIG}/DataBaseManager.h
-    ${CONFIG}/LoginLockout.h
+    ${MANAGER}/Worker/AppDataBase.h
+    ${MANAGER}/Worker/CSVWorker.h
+    ${MANAGER}/DataManager.h
+    ${MANAGER}/LoginLockout.h
     ${MAINMENU}/MainWindow.h
     ${ROLE}/AdminMenu.h
     ${ROLE}/AnalystMenu.h
@@ -67,9 +69,10 @@ set(PROJECT_FORM
 set(PROJECT_SOURCES
     Main.cpp
     ${CONFIG}/AppConfig.cpp
-    ${CONFIG}/AppDataBase.cpp
-    ${CONFIG}/DataBaseManager.cpp
-    ${CONFIG}/LoginLockout.cpp
+    ${MANAGER}/Worker/AppDataBase.cpp
+    ${MANAGER}/Worker/CSVWorker.cpp
+    ${MANAGER}/DataManager.cpp
+    ${MANAGER}/LoginLockout.cpp
     ${MAINMENU}/MainWindow.cpp
     ${ROLE}/AdminMenu.cpp
     ${ROLE}/AnalystMenu.cpp
@@ -149,6 +152,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/${DIALOG}
     ${CMAKE_CURRENT_SOURCE_DIR}/bcrypt
     ${CMAKE_CURRENT_SOURCE_DIR}/${CONFIG}
+    ${CMAKE_CURRENT_SOURCE_DIR}/${MANAGER}
 )
 
 find_library(BCRYPT_LIB bcrypt PATHS ${CMAKE_CURRENT_SOURCE_DIR} NO_DEFAULT_PATH)

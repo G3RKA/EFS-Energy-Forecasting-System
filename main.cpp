@@ -1,6 +1,6 @@
 #include "MainMenu/MainWindow.h"
-#include "AccountUserRow.h"
-#include "DataBaseManager.h"
+#include "DataTypes/AccountUserRow.h"
+#include "Manager/DataManager.h"
 
 #include <QFontDatabase>
 #include <QDebug>
@@ -32,12 +32,12 @@ int main(int argc, char *argv[])
 
     qRegisterMetaType<QVector<AccountUserRow>>("QVector<AccountUserRow>");
 
-    DataBaseManager::instance().Init();
+    DataManager::instance().Init();
     MainWindow w;
 
-    QObject::connect(&DataBaseManager::instance(), &DataBaseManager::OnLostConnection, &w, &MainWindow::BackToAuthMenu);
+    QObject::connect(&DataManager::instance(), &DataManager::OnLostConnection, &w, &MainWindow::BackToAuthMenu);
 
-    DataBaseManager::instance().ConnectToDatabase();
+    DataManager::instance().ConnectToDatabase();
 
     w.show();
 

@@ -6,7 +6,7 @@
 #include <QVector>
 #include <qobject.h>
 
-#include "AccountUserRow.h"
+#include "DataTypes/AccountUserRow.h"
 
 class QSqlDatabase;
 

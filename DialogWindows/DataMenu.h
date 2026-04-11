@@ -19,6 +19,7 @@ private slots:
     void on_CloseButton_clicked();
 
     void on_LoadButton_clicked();
+    void OnCSVProcessingFinished(bool success, const QString& message);
 
 private:
     Ui::DataMenu *ui;

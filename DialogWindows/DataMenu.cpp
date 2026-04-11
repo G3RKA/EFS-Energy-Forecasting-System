@@ -1,7 +1,11 @@
 #include "DataMenu.h"
 #include "UI/ui_DataMenu.h"
 
+#include "DataManager.h"
+
 #include <QFileDialog>
+#include <QMessageBox>
+
 DataMenu::DataMenu(QWidget *parent)
     : QDialog(parent)
     , ui(new Ui::DataMenu)
@@ -15,6 +19,9 @@ DataMenu::DataMenu(QWidget *parent)
     ui->DataTable->horizontalHeader()->setMinimumHeight(60);
 
     ui->DataPicker->setDate(QDate::currentDate());
+
+    connect(&DataManager::instance(), &DataManager::CSVProcessingFinished,
+            this, &DataMenu::OnCSVProcessingFinished);
 }
 
 DataMenu::~DataMenu()
@@ -31,10 +38,23 @@ void DataMenu::on_LoadButton_clicked()
     if (path.isEmpty()) {
         return;
     }
-    Q_UNUSED(path);
+
+    DataManager::instance().RequestProcessCSV(path);
 }
 
 void DataMenu::on_CloseButton_clicked()
 {
     this->close();
+}
+
+void DataMenu::OnCSVProcessingFinished(bool success, const QString& message)
+{
+    const QString title = QStringLiteral("Загрузка CSV");
+    if (success) {
+        QMessageBox::information(this, title,
+                                 message.isEmpty() ? QStringLiteral("Обработка завершена.") : message);
+    } else {
+        QMessageBox::warning(this, title,
+                               message.isEmpty() ? QStringLiteral("Ошибка обработки файла.") : message);
+    }
 }

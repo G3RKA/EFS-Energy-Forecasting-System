@@ -1,7 +1,7 @@
 #include "AccountEdit.h"
 #include "UI/ui_AccountEdit.h"
 
-#include "DataBaseManager.h"
+#include "DataManager.h"
 
 #include <QLineEdit>
 #include <QRegularExpression>
@@ -24,7 +24,7 @@ AccountEdit::AccountEdit(QWidget *parent, const QString& InLogin, const QString&
 
     ui->ErrorLabel->setVisible(false);
 
-    connect(&DataBaseManager::instance(), &DataBaseManager::UserUpdateFinished, this,
+    connect(&DataManager::instance(), &DataManager::UserUpdateFinished, this,
             &AccountEdit::OnUserUpdateFinished);
 }
 
@@ -64,7 +64,7 @@ void AccountEdit::on_SaveButton_clicked()
     }
 
     ui->SaveButton->setEnabled(false);
-    DataBaseManager::instance().RequestUpdateUser(UserLogin, name, passhash);
+    DataManager::instance().RequestUpdateUser(UserLogin, name, passhash);
 }
 
 void AccountEdit::OnUserUpdateFinished(bool success, const QString& login, const QString& name)

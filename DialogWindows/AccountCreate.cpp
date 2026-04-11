@@ -1,7 +1,7 @@
 #include "AccountCreate.h"
 #include "UI/ui_AccountCreate.h"
 
-#include "DataBaseManager.h"
+#include "DataManager.h"
 #include "bcrypt.hpp"
 
 #include <QRegularExpression>
@@ -19,7 +19,7 @@ AccountCreate::AccountCreate(QWidget *parent)
     ui->NameEdit->setMaxLength(45);
     ui->LoginEdit->setMaxLength(30);
 
-    connect(&DataBaseManager::instance(), &DataBaseManager::UserCreateFinished, this, &AccountCreate::OnUserCreateFinished);
+    connect(&DataManager::instance(), &DataManager::UserCreateFinished, this, &AccountCreate::OnUserCreateFinished);
 }
 
 AccountCreate::~AccountCreate()
@@ -57,7 +57,7 @@ void AccountCreate::on_ConnectButton_clicked()
     ui->ErrorLabel->setVisible(false);
     PendingCreateLogin = login;
     ui->ConnectButton->setEnabled(false);
-    DataBaseManager::instance().RequestCreateUser(login, name, ui->RoleBox->currentText(), passhash);
+    DataManager::instance().RequestCreateUser(login, name, ui->RoleBox->currentText(), passhash);
 }
 
 void AccountCreate::OnUserCreateFinished(bool success, const QString& login, bool duplicateLogin)
