@@ -24,6 +24,7 @@ public:
     void RequestDeleteUser(const QString& login);
     void RequestUpdateUser(const QString& login, const QString& name, const QString& password);
     void RequestCreateUser(const QString& login, const QString& name, const QString& role, const QString& passwordHash);
+    void RequestLoginVerify(const QString& login, const QString& password);
 
     ~DataBaseManager() override;
 
@@ -40,6 +41,7 @@ signals:
     void OnDeleteUserRequested(const QString& login);
     void OnUpdateUserRequested(const QString& login, const QString& name, const QString& password);
     void OnCreateUserRequested(const QString& login, const QString& name, const QString& role, const QString& passwordHash);
+    void OnLoginVerifyRequested(const QString& login, const QString& password);
 
     //  Output
     void OnLostConnection();
@@ -50,6 +52,7 @@ signals:
     void UserDeleteFinished(bool success, const QString& login);
     void UserUpdateFinished(bool success, const QString& login, const QString& name);
     void UserCreateFinished(bool success, const QString& login, bool duplicateLogin);
+    void LoginVerifyFinished(bool success, const QString& dbRole, const QString& displayName, bool invalidCredentials);
 
 private:
     explicit DataBaseManager(QObject *parent = nullptr);

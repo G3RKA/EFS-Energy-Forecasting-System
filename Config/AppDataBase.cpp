@@ -7,6 +7,7 @@
 #include <QSqlQuery>
 
 #include "AppConfig.h"
+#include "bcrypt.hpp"
 
 AppDataBase::AppDataBase(QObject *parent)
     : QObject{parent}
@@ -99,6 +100,41 @@ void AppDataBase::OnUpdateUserRequested(const QString& login, const QString& nam
         }
     }
     emit UserUpdateFinished(ok, login, name);
+}
+
+void AppDataBase::OnLoginVerifyRequested(const QString& login, const QString& password)
+{
+    QSqlDatabase db;
+    if (!GetOpenDatabase(db)) {
+        return;
+    }
+
+    QSqlQuery query(db);
+    query.prepare(QStringLiteral("SELECT Role, Password, Name FROM %1 WHERE Login = :login")
+                      .arg(AppConfig::DatabaseUsersTable));
+    query.bindValue(QStringLiteral(":login"), login);
+    if (!query.exec()) {
+        qDebug() << "DataBase: не удалось проверить вход:" << query.lastError().text();
+        emit LoginVerifyFinished(false, QString(), QString(), false);
+        return;
+    }
+
+    if (!query.next()) {
+        emit LoginVerifyFinished(false, QString(), QString(), true);
+        return;
+    }
+
+    const QString dbRole = query.value(0).toString().trimmed().toLower();
+    const QString passwordHash = query.value(1).toString();
+    const QString displayName = query.value(2).toString();
+
+    if (passwordHash.isEmpty()
+        or !BCrypt::validatePassword(password.toStdString(), passwordHash.toStdString())) {
+        emit LoginVerifyFinished(false, QString(), QString(), true);
+        return;
+    }
+
+    emit LoginVerifyFinished(true, dbRole, displayName, false);
 }
 
 void AppDataBase::OnCreateUserRequested(const QString& login, const QString& name, const QString& role,

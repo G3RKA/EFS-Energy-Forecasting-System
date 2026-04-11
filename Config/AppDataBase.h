@@ -26,6 +26,7 @@ public slots:
     void OnDeleteUserRequested(const QString& login);
     void OnUpdateUserRequested(const QString& login, const QString& name, const QString& password);
     void OnCreateUserRequested(const QString& login, const QString& name, const QString& role, const QString& passwordHash);
+    void OnLoginVerifyRequested(const QString& login, const QString& password);
 
 signals:
     void OnDataBaseStateSended(bool connected);
@@ -36,6 +37,7 @@ signals:
     void UserDeleteFinished(bool success, const QString& login);
     void UserUpdateFinished(bool success, const QString& login, const QString& name);
     void UserCreateFinished(bool success, const QString& login, bool duplicateLogin);
+    void LoginVerifyFinished(bool success, const QString& dbRole, const QString& displayName, bool invalidCredentials);
 
 private:
     bool IternalConnectToDatabase();

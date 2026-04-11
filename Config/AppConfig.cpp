@@ -1,5 +1,6 @@
 #include "AppConfig.h"
 
+#include <QCoreApplication>
 #include <QDebug>
 #include <QDir>
 #include <QStandardPaths>
@@ -18,6 +19,16 @@ const QString AppConfig::DatabaseEnergyStr = "energy";
 const QString AppConfig::DatabaseUsersTable = "user";
 const QString AppConfig::DatabaseLogsTable = "logs";
 
+const QString AppConfig::LoginSecurityGroup = QStringLiteral("LoginSecurity");
+const QString AppConfig::LoginLockoutAttemptsKey = QStringLiteral("failedAttempts");
+const QString AppConfig::LoginLockoutUntilMsKey = QStringLiteral("lockoutUntilMs");
+
+QSettings AppConfig::LoginLockoutSettings()
+{
+    return QSettings(QSettings::NativeFormat, QSettings::UserScope,
+                     QCoreApplication::organizationName(),
+                     QCoreApplication::applicationName());
+}
 
 bool AppConfig::IsSuperAdmin(const QString &Login)
 {

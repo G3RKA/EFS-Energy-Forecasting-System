@@ -7,6 +7,8 @@
 #include <QLineEdit>
 
 #include "AppConfig.h"
+#include "DataBaseManager.h"
+#include "LoginLockout.h"
 #include "AdminMenu.h"
 #include "AnalystMenu.h"
 #include "EnergyMenu.h"
@@ -22,6 +24,8 @@ MainWindow::MainWindow(QWidget *parent)
     DisableLabels();
     ui->PageWidget->setCurrentIndex(0);
 
+    connect(&DataBaseManager::instance(), &DataBaseManager::LoginVerifyFinished,
+            this, &MainWindow::OnLoginVerifyFinished);
 }
 
 MainWindow::~MainWindow()
@@ -55,6 +59,14 @@ void MainWindow::on_LogInButton_clicked()
     
     DisableLabels();
 
+    int remainingSec = 0;
+    if (LoginLockout::isLocked(remainingSec)) {
+        ui->ErrorLabel->setText(LoginLockout::messageForRemainingSeconds(remainingSec));
+        ui->ErrorLabel->setVisible(true);
+        ui->LogInButton->setEnabled(true);
+        return;
+    }
+
     QString LoginText = ui->LoginLine->text();
     QString PasswordText = ui->PasswordLine->text();
 
@@ -62,6 +74,8 @@ void MainWindow::on_LogInButton_clicked()
     {
         if (AppConfig::CheckSAPassword(LoginText, PasswordText))
         {
+            LoginLockout::clearOnSuccessfulLogin();
+
             AdminMenu* Menu = new AdminMenu(this);
             ui->RoleLayout->addWidget(Menu);
 
@@ -71,30 +85,50 @@ void MainWindow::on_LogInButton_clicked()
         }
         else
         {
-            EnableWrongPassword();
+            ShowCredentialError();
         }
         ui->LogInButton->setEnabled(true);
         return;
     }
 
+    if (LoginText.trimmed().isEmpty() || PasswordText.isEmpty()) {
+        EnableWrongPassword();
+        ui->LogInButton->setEnabled(true);
+        return;
+    }
 
-    QString Role(ui->LoginLine->text());
+    DataBaseManager::instance().RequestLoginVerify(LoginText.trimmed(), PasswordText);
+}
 
-    if (Role == "Analyst")
-    {
+void MainWindow::OnLoginVerifyFinished(bool success, const QString& dbRole, const QString& displayName,
+                                       bool invalidCredentials)
+{
+    ui->LogInButton->setEnabled(true);
+
+    if (!success) {
+        if (invalidCredentials) {
+            ShowCredentialError();
+        }
+        return;
+    }
+
+    LoginLockout::clearOnSuccessfulLogin();
+
+    const QString userLabel = displayName.trimmed().isEmpty() ? ui->LoginLine->text().trimmed() : displayName;
+    SetUserName(userLabel);
+
+    if (dbRole == AppConfig::DatabaseAnalystStr) {
         AnalystMenu* Menu = new AnalystMenu(this);
         ui->RoleLayout->addWidget(Menu);
-    }
-    else if (Role == "Energy")
-    {
+    } else if (dbRole == AppConfig::DatabaseEnergyStr) {
         EnergyMenu* Menu = new EnergyMenu(this);
         ui->RoleLayout->addWidget(Menu);
+    } else {
+        ShowCredentialError();
+        return;
     }
 
     ui->PageWidget->setCurrentIndex(1);
-
-
-    ui->LogInButton->setEnabled(true);
 }
 
 void MainWindow::on_RecoveryButton_clicked()
@@ -118,6 +152,19 @@ void MainWindow::SetUserName(const QString &UName)
 
 void MainWindow::EnableWrongPassword()
 {
+    ui->ErrorLabel->setText(QStringLiteral("Неверный логин или пароль"));
+    ui->ErrorLabel->setVisible(true);
+}
+
+void MainWindow::ShowCredentialError()
+{
+    LoginLockout::registerInvalidCredentialsAttempt();
+    int remainingSec = 0;
+    if (LoginLockout::isLocked(remainingSec)) {
+        ui->ErrorLabel->setText(LoginLockout::messageForRemainingSeconds(remainingSec));
+    } else {
+        ui->ErrorLabel->setText(QStringLiteral("Неверный логин или пароль"));
+    }
     ui->ErrorLabel->setVisible(true);
 }
 

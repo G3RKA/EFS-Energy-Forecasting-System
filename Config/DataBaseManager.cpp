@@ -46,6 +46,7 @@ void DataBaseManager::Init()
     connect(m_worker, &AppDataBase::UserDeleteFinished, this, &DataBaseManager::UserDeleteFinished);
     connect(m_worker, &AppDataBase::UserUpdateFinished, this, &DataBaseManager::UserUpdateFinished);
     connect(m_worker, &AppDataBase::UserCreateFinished, this, &DataBaseManager::UserCreateFinished);
+    connect(m_worker, &AppDataBase::LoginVerifyFinished, this, &DataBaseManager::LoginVerifyFinished);
 
     // Manager -> Worker
     connect(this, &DataBaseManager::OnConnectToDataBase, m_worker, &AppDataBase::OnConnectRequested);
@@ -56,6 +57,7 @@ void DataBaseManager::Init()
     connect(this, &DataBaseManager::OnDeleteUserRequested, m_worker, &AppDataBase::OnDeleteUserRequested);
     connect(this, &DataBaseManager::OnUpdateUserRequested, m_worker, &AppDataBase::OnUpdateUserRequested);
     connect(this, &DataBaseManager::OnCreateUserRequested, m_worker, &AppDataBase::OnCreateUserRequested);
+    connect(this, &DataBaseManager::OnLoginVerifyRequested, m_worker, &AppDataBase::OnLoginVerifyRequested);
 
     m_thread->start();
 }
@@ -99,4 +101,9 @@ void DataBaseManager::RequestCreateUser(const QString& login, const QString& nam
                                         const QString& passwordHash)
 {
     emit OnCreateUserRequested(login, name, role, passwordHash);
+}
+
+void DataBaseManager::RequestLoginVerify(const QString& login, const QString& password)
+{
+    emit OnLoginVerifyRequested(login, password);
 }

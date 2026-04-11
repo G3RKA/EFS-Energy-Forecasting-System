@@ -24,10 +24,13 @@ private slots:
     void on_LogInButton_clicked();
     void on_RecoveryButton_clicked();
     void on_LogOutButton_clicked();
+    void OnLoginVerifyFinished(bool success, const QString& dbRole, const QString& displayName,
+                               bool invalidCredentials);
 
 private:
     void SetUserName(const QString&);
     void EnableWrongPassword();
+    void ShowCredentialError();
     void ClearEdits();
     void DisableLabels();
     void ResetRoleMenu();

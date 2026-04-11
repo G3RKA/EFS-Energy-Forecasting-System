@@ -24,6 +24,7 @@ set(PROJECT_HEADERS
     ${CONFIG}/AppConfig.h
     ${CONFIG}/AppDataBase.h
     ${CONFIG}/DataBaseManager.h
+    ${CONFIG}/LoginLockout.h
     ${MAINMENU}/MainWindow.h
     ${ROLE}/AdminMenu.h
     ${ROLE}/AnalystMenu.h
@@ -68,6 +69,7 @@ set(PROJECT_SOURCES
     ${CONFIG}/AppConfig.cpp
     ${CONFIG}/AppDataBase.cpp
     ${CONFIG}/DataBaseManager.cpp
+    ${CONFIG}/LoginLockout.cpp
     ${MAINMENU}/MainWindow.cpp
     ${ROLE}/AdminMenu.cpp
     ${ROLE}/AnalystMenu.cpp

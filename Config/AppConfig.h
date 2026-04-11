@@ -2,7 +2,7 @@
 #define APPCONFIG_H
 
 #include <QMap>
-#include <qobject.h>
+#include <QSettings>
 
 class AppConfig
 {
@@ -17,6 +17,12 @@ public:
     static bool CheckSAPassword(const QString& Login, const QString& Password);
     static QString GetSettingsPath();
     static QString ConvertRoleToDB(const QString& role);
+
+    static QSettings LoginLockoutSettings();
+    static const QString LoginSecurityGroup;
+    static const QString LoginLockoutAttemptsKey;
+    static const QString LoginLockoutUntilMsKey;
+    static constexpr qint64 LoginLockoutDurationMs = 10LL * 60 * 1000;
 
 private:
     AppConfig() = default;
