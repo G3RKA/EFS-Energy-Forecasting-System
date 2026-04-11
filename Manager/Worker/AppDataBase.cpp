@@ -381,10 +381,10 @@ bool AppDataBase::UpdateLastVisitForLogin(const QString& Login)
 void AppDataBase::OnTrySettingsAnonymous()
 {
     QSettings Settings(AppConfig::GetSettingsPath(), QSettings::IniFormat);
-    Settings.beginGroup("DataBase");
-        const QString Host = Settings.value("Host").toString().trimmed();
-        const QString PortText = Settings.value("Port").toString().trimmed();
-        const QString DbCatalogName = Settings.value("Name").toString().trimmed();
+    Settings.beginGroup(AppConfig::DatabaseGroup);
+        const QString Host = Settings.value(AppConfig::DatabaseHostKey).toString().trimmed();
+        const QString PortText = Settings.value(AppConfig::DatabasePortKey).toString().trimmed();
+        const QString DbCatalogName = Settings.value(AppConfig::DatabaseNameKey).toString().trimmed();
     Settings.endGroup();
 
     const QString ConnRegistryName = AppConfig::DatabaseName;
@@ -440,12 +440,12 @@ void AppDataBase::OnTrySettingsAnonymous()
 void AppDataBase::OnTrySettingsWithUser()
 {
     QSettings Settings(AppConfig::GetSettingsPath(), QSettings::IniFormat);
-    Settings.beginGroup("DataBase");
-        const QString Host = Settings.value("Host").toString().trimmed();
-        const QString PortText = Settings.value("Port").toString().trimmed();
-        const QString CatalogName = Settings.value("Name").toString().trimmed();
-        const QString User = Settings.value("User").toString().trimmed();
-        const QString DbPassword = Settings.value("Password").toString().trimmed();
+    Settings.beginGroup(AppConfig::DatabaseGroup);
+        const QString Host = Settings.value(AppConfig::DatabaseHostKey).toString().trimmed();
+        const QString PortText = Settings.value(AppConfig::DatabasePortKey).toString().trimmed();
+        const QString CatalogName = Settings.value(AppConfig::DatabaseNameKey).toString().trimmed();
+        const QString User = Settings.value(AppConfig::DatabaseLoginKey).toString().trimmed();
+        const QString DbPassword = Settings.value(AppConfig::DatabasePasswordKey).toString().trimmed();
     Settings.endGroup();
 
     const QString ConnRegistryName = AppConfig::DatabaseName;
