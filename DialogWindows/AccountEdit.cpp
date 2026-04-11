@@ -1,7 +1,8 @@
 #include "AccountEdit.h"
 #include "UI/ui_AccountEdit.h"
 
-#include "AppDataBase.h"
+#include "DataBaseManager.h"
+
 #include <QLineEdit>
 #include <QRegularExpression>
 
@@ -22,6 +23,9 @@ AccountEdit::AccountEdit(QWidget *parent, const QString& InLogin, const QString&
     ui->NameEdit->setText(UserOldName);
 
     ui->ErrorLabel->setVisible(false);
+
+    connect(&DataBaseManager::instance(), &DataBaseManager::UserUpdateFinished, this,
+            &AccountEdit::OnUserUpdateFinished);
 }
 
 AccountEdit::~AccountEdit()
@@ -55,15 +59,23 @@ void AccountEdit::on_SaveButton_clicked()
     }
 
     QString passhash = pass;
-    if (!pass.isEmpty())
-    {
+    if (!pass.isEmpty()) {
         passhash = QString::fromStdString(BCrypt::generateHash(pass.toStdString()));
     }
 
-    if (!AppDataBase::UpdateUser(UserLogin, name, passhash)) {
+    ui->SaveButton->setEnabled(false);
+    DataBaseManager::instance().RequestUpdateUser(UserLogin, name, passhash);
+}
+
+void AccountEdit::OnUserUpdateFinished(bool success, const QString& login, const QString& name)
+{
+    if (login != UserLogin) {
         return;
     }
-
+    ui->SaveButton->setEnabled(true);
+    if (!success) {
+        return;
+    }
     emit UserEdited(UserLogin, name);
     accept();
 }
@@ -82,6 +94,6 @@ bool AccountEdit::IsPasswordValid(const QString& Password)
 bool AccountEdit::IsNameValid(const QString& Name)
 {
     static const QRegularExpression pattern(R"(^[\p{Latin}\p{Cyrillic}]{1,45}$)",
-        QRegularExpression::UseUnicodePropertiesOption);
+                                            QRegularExpression::UseUnicodePropertiesOption);
     return pattern.match(Name).hasMatch();
 }

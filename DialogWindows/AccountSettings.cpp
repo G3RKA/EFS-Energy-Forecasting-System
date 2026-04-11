@@ -5,7 +5,7 @@
 #include "AccountDelete.h"
 #include "AccountEdit.h"
 #include "AppConfig.h"
-#include "AppDataBase.h"
+#include "DataBaseManager.h"
 
 #include <QDateTime>
 #include <QDebug>
@@ -13,11 +13,7 @@
 #include <QHeaderView>
 #include <QLocale>
 #include <QPushButton>
-#include <QSqlDatabase>
-#include <QSqlError>
-#include <QSqlQuery>
 #include <QTableWidgetItem>
-#include <QVariant>
 
 AccountSettings::AccountSettings(QWidget *parent)
     : QDialog(parent)
@@ -32,6 +28,8 @@ AccountSettings::AccountSettings(QWidget *parent)
     ui->AccountTable->horizontalHeader()->setMinimumHeight(60);
     ui->AccountTable->setWordWrap(true);
     ui->AccountTable->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+
+    connect(&DataBaseManager::instance(), &DataBaseManager::UsersListLoaded, this, &AccountSettings::LoadUsers);
 
     LoadUsersFromDatabase();
 }
@@ -49,22 +47,20 @@ void AccountSettings::on_ExitButton_clicked()
 void AccountSettings::on_CreateButton_clicked()
 {
     AccountCreate Menu;
-        connect(&Menu, &AccountCreate::tableUpdateRequested, this, &AccountSettings::LoadUsersFromDatabase);
+    connect(&Menu, &AccountCreate::tableUpdateRequested, this, &AccountSettings::LoadUsersFromDatabase);
     Menu.exec();
 }
 
 void AccountSettings::LoadUsersFromDatabase()
 {
+    DataBaseManager::instance().RequestUsersList();
+}
+
+void AccountSettings::LoadUsers(const QVector<AccountUserRow>& users)
+{
     ui->AccountTable->setRowCount(0);
 
-    QSqlQuery* query = AppDataBase::GetAllUsers();
-
-    if (not(query))
-    {
-        return;
-    }
-
-    while (query->next()) {
+    for (const AccountUserRow& user : users) {
         const int row = ui->AccountTable->rowCount();
         ui->AccountTable->insertRow(row);
 
@@ -83,13 +79,13 @@ void AccountSettings::LoadUsersFromDatabase()
             return container;
         };
 
-        const QString Login = query->value(0).toString();
-        const QString Name = query->value(1).toString();
+        const QString& Login = user.login;
+        const QString& Name = user.name;
 
         ui->AccountTable->setItem(row, 0, makeItem(Login));
         ui->AccountTable->setItem(row, 1, makeItem(Name));
-        ui->AccountTable->setItem(row, 2, makeItem(FormatRole(query->value(2))));
-        ui->AccountTable->setItem(row, 3, makeItem(FormatLastVisit(query->value(3))));
+        ui->AccountTable->setItem(row, 2, makeItem(FormatRole(QVariant(user.role))));
+        ui->AccountTable->setItem(row, 3, makeItem(FormatLastVisit(user.lastVisit)));
         QPushButton *editButton = new QPushButton("Изменить", ui->AccountTable);
         QPushButton *deleteButton = new QPushButton("Удалить", ui->AccountTable);
 
@@ -108,8 +104,6 @@ void AccountSettings::LoadUsersFromDatabase()
         ui->AccountTable->setCellWidget(row, 4, makeButtonContainer(editButton));
         ui->AccountTable->setCellWidget(row, 5, makeButtonContainer(deleteButton));
     }
-
-    delete query;
 
     ui->AccountTable->resizeRowsToContents();
 }

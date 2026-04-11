@@ -1,6 +1,6 @@
-#include "LostConnectionDialog.h"
 #include "MainMenu/MainWindow.h"
-#include "AppDataBase.h"
+#include "AccountUserRow.h"
+#include "DataBaseManager.h"
 
 #include <QFontDatabase>
 #include <QDebug>
@@ -30,19 +30,16 @@ int main(int argc, char *argv[])
 
     InitAppFont(a);
 
-    bool success = AppDataBase::ConnectToDatabase();
+    qRegisterMetaType<QVector<AccountUserRow>>("QVector<AccountUserRow>");
 
+    DataBaseManager::instance().Init();
     MainWindow w;
-    AppDataBase::SetConnectionLostTarget(&w);
+
+    QObject::connect(&DataBaseManager::instance(), &DataBaseManager::OnLostConnection, &w, &MainWindow::BackToAuthMenu);
+
+    DataBaseManager::instance().ConnectToDatabase();
+
     w.show();
-
-    if (not(success))
-    {
-        LostConnectionDialog menu(&w);
-
-        menu.exec();
-    }
-
 
     return a.exec();
 }

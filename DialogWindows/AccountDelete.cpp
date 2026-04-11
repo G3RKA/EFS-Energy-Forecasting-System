@@ -1,7 +1,7 @@
 #include "AccountDelete.h"
 #include "UI/ui_AccountDelete.h"
 
-#include "AppDataBase.h"
+#include "DataBaseManager.h"
 
 AccountDelete::AccountDelete(QWidget *parent, const QString& InLogin)
     : QDialog(parent)
@@ -13,6 +13,9 @@ AccountDelete::AccountDelete(QWidget *parent, const QString& InLogin)
 
     UserLogin = InLogin;
     ui->TextLabel->setText(ui->TextLabel->text().arg(InLogin));
+
+    connect(&DataBaseManager::instance(), &DataBaseManager::UserDeleteFinished, this,
+            &AccountDelete::OnUserDeleteFinished);
 }
 
 AccountDelete::~AccountDelete()
@@ -22,10 +25,19 @@ AccountDelete::~AccountDelete()
 
 void AccountDelete::on_ConfirmButton_clicked()
 {
-    if (!AppDataBase::DeleteUserByLogin(UserLogin)) {
+    ui->ConfirmButton->setEnabled(false);
+    DataBaseManager::instance().RequestDeleteUser(UserLogin);
+}
+
+void AccountDelete::OnUserDeleteFinished(bool success, const QString& login)
+{
+    if (login != UserLogin) {
         return;
     }
-
+    ui->ConfirmButton->setEnabled(true);
+    if (!success) {
+        return;
+    }
     emit UserDeleted(UserLogin);
     accept();
 }

@@ -2,10 +2,11 @@
 #define ACCOUNTSETTINGS_H
 
 #include <QDialog>
+#include <QVector>
+
+#include "AccountUserRow.h"
 
 class QPushButton;
-class QString;
-class QVariant;
 
 namespace Ui {
 class AccountSettings;
@@ -25,6 +26,7 @@ private slots:
 
 private:
     void LoadUsersFromDatabase();
+    void LoadUsers(const QVector<AccountUserRow>& users);
     void EditUserRowByLogin(const QString& login, const QString& name);
     void RemoveUserRowByLogin(const QString& login);
     void SetActionButtonProperties(QPushButton* button, const QString& login);

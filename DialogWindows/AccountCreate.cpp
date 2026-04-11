@@ -1,7 +1,7 @@
 #include "AccountCreate.h"
 #include "UI/ui_AccountCreate.h"
 
-#include "AppDataBase.h"
+#include "DataBaseManager.h"
 #include "bcrypt.hpp"
 
 #include <QRegularExpression>
@@ -18,6 +18,8 @@ AccountCreate::AccountCreate(QWidget *parent)
 
     ui->NameEdit->setMaxLength(45);
     ui->LoginEdit->setMaxLength(30);
+
+    connect(&DataBaseManager::instance(), &DataBaseManager::UserCreateFinished, this, &AccountCreate::OnUserCreateFinished);
 }
 
 AccountCreate::~AccountCreate()
@@ -32,25 +34,20 @@ void AccountCreate::on_ConnectButton_clicked()
     const QString pass = ui->PassEdit->text().trimmed();
 
     QStringList failed;
-    if (AppDataBase::IsLoginTaken(login)) {
-        failed << "Логин должен быть уникальным";
-    }
     if (!IsLoginValid(login)) {
         failed << "Логин должен состоять только из букв латинского алфавита и цифр";
-    } 
-    if (!IsNameValid(name)) 
-    {
+    }
+    if (!IsNameValid(name)) {
         failed << "Имя должно состоять только из букв русского или латинского алфавита";
     }
-    if (!IsPasswordValid(pass)) 
-    {
+    if (!IsPasswordValid(pass)) {
         failed << "Пароль должен быть не менее 8 символов и содержать буквы латинского алфавита в верхнем, нижнем регистрах и цифры";
     }
 
     if (!failed.isEmpty()) {
-        QString message = failed.join(".\n");
-        message += '.';
-        ui->ErrorLabel->setText(message);
+        FailMessage = failed.join(".\n");
+        FailMessage += '.';
+        ui->ErrorLabel->setText(FailMessage);
         ui->ErrorLabel->setVisible(true);
         return;
     }
@@ -58,12 +55,29 @@ void AccountCreate::on_ConnectButton_clicked()
     const QString passhash = QString::fromStdString(BCrypt::generateHash(pass.toStdString()));
 
     ui->ErrorLabel->setVisible(false);
-    if (!AppDataBase::CreateUser(login, name, ui->RoleBox->currentText(), passhash)) {
+    PendingCreateLogin = login;
+    ui->ConnectButton->setEnabled(false);
+    DataBaseManager::instance().RequestCreateUser(login, name, ui->RoleBox->currentText(), passhash);
+}
+
+void AccountCreate::OnUserCreateFinished(bool success, const QString& login, bool duplicateLogin)
+{
+    if (login != PendingCreateLogin) {
+        return;
+    }
+    ui->ConnectButton->setEnabled(true);
+
+    if (success) {
+        emit tableUpdateRequested();
+        accept();
         return;
     }
 
-    emit tableUpdateRequested();
-    accept();
+    if (duplicateLogin) {
+        ui->ErrorLabel->setText("Логин должен быть уникальным.\n"+FailMessage);
+        ui->ErrorLabel->setVisible(true);
+        return;
+    }
 }
 
 void AccountCreate::on_CloseButton_clicked()
@@ -86,6 +100,6 @@ bool AccountCreate::IsPasswordValid(const QString& Password)
 bool AccountCreate::IsNameValid(const QString& Name)
 {
     static const QRegularExpression pattern(R"(^[\p{Latin}\p{Cyrillic}]{1,45}$)",
-        QRegularExpression::UseUnicodePropertiesOption);
+                                            QRegularExpression::UseUnicodePropertiesOption);
     return pattern.match(Name).hasMatch();
 }

@@ -23,16 +23,16 @@ signals:
 private slots:
     void on_CloseButton_clicked();
     void on_ConnectButton_clicked();
+    void UpdateDBState(bool connected);
     void ConnectionDataChanged();
     void OnDatabaseUserSubmitted(const QString& user, const QString& password);
+    void OnSettingsAnonymousResult(bool openUserDialog, bool showErrorLabel, const QString& errorLabelText);
+    void OnSettingsUserResult(bool success, bool unknownDatabase, bool badCredentials, const QString& unknownDbMessage);
 
 private:
     void SetupDBStatus();
-    void UpdateDBState();
     void SetupInputConstraints();
     void SaveDatabaseConnectionSettings();
-    bool TryConnectToMysql();
-    bool TryConnectToMysqlWithUser(const QString& user, const QString& password);
 
     Ui::DataBaseSettings *ui;
 };

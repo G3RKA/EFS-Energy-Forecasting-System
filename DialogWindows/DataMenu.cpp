@@ -1,8 +1,7 @@
 #include "DataMenu.h"
 #include "UI/ui_DataMenu.h"
 
-#include "UploadError.h"
-
+#include <QFileDialog>
 DataMenu::DataMenu(QWidget *parent)
     : QDialog(parent)
     , ui(new Ui::DataMenu)
@@ -25,8 +24,14 @@ DataMenu::~DataMenu()
 
 void DataMenu::on_LoadButton_clicked()
 {
-    UploadError Menu;
-    Menu.exec();
+    const QString path = QFileDialog::getOpenFileName(this,
+                                                      "Выберите CSV-файл",
+                                                      QString(),
+                                                      "CSV (*.csv)");
+    if (path.isEmpty()) {
+        return;
+    }
+    Q_UNUSED(path);
 }
 
 void DataMenu::on_CloseButton_clicked()

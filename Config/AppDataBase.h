@@ -3,9 +3,11 @@
 
 #include <QObject>
 #include <QString>
+#include <QVector>
 #include <qobject.h>
 
-class QSqlQuery;
+#include "AccountUserRow.h"
+
 class QSqlDatabase;
 
 class AppDataBase : public QObject
@@ -14,21 +16,30 @@ class AppDataBase : public QObject
 public:
     explicit AppDataBase(QObject *parent = nullptr);
 
-    static void SetConnectionLostTarget(QObject* mainWindow);
-    static bool ConnectToDatabase();
-    static QSqlQuery* GetAllUsers();
-    static bool CreateUser(const QString& login, const QString& name, const QString& role, const QString& password);
-    static bool IsLoginTaken(const QString& login);
-    static bool DeleteUserByLogin(const QString& login);
-    static bool UpdateUser(const QString& login, const QString& name, const QString& password);
+    void SendDataBaseState();
+
+public slots:
+    void GetAllUsers();
+    void OnConnectRequested();
+    void OnTrySettingsAnonymous();
+    void OnTrySettingsWithUser();
+    void OnDeleteUserRequested(const QString& login);
+    void OnUpdateUserRequested(const QString& login, const QString& name, const QString& password);
+    void OnCreateUserRequested(const QString& login, const QString& name, const QString& role, const QString& passwordHash);
 
 signals:
+    void OnDataBaseStateSended(bool connected);
+    void OnLostConnection();
+    void SettingsAnonymousResult(bool openUserDialog, bool showErrorLabel, const QString& errorLabelText);
+    void SettingsUserResult(bool success, bool unknownDatabase, bool badCredentials, const QString& unknownDbMessage);
+    void UsersListLoaded(const QVector<AccountUserRow>& users);
+    void UserDeleteFinished(bool success, const QString& login);
+    void UserUpdateFinished(bool success, const QString& login, const QString& name);
+    void UserCreateFinished(bool success, const QString& login, bool duplicateLogin);
 
 private:
-    static bool GetOpenDatabase(QSqlDatabase& db);
-    static void NotifyConnectionLostUi();
-
-    static QObject* s_connectionLostTarget;
+    bool IternalConnectToDatabase();
+    bool GetOpenDatabase(QSqlDatabase& db);
 };
 
 #endif // APPDATABASE_H

@@ -29,6 +29,25 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::BackToAuthMenu()
+{
+    const QList<QDialog*> dialogs = findChildren<QDialog*>();
+    for (QDialog *dialog : dialogs) {
+        if (dialog)
+        {
+            dialog->close();
+        }
+    }
+
+    ClearEdits();
+    DisableLabels();
+    ui->PageWidget->setCurrentIndex(0);
+    ResetRoleMenu();
+
+    LostConnectionDialog lostDialog(this);
+    lostDialog.exec();
+}
+
 void MainWindow::on_LogInButton_clicked()
 {
 
@@ -58,7 +77,7 @@ void MainWindow::on_LogInButton_clicked()
         return;
     }
 
-    /*
+
     QString Role(ui->LoginLine->text());
 
     if (Role == "Analyst")
@@ -73,7 +92,7 @@ void MainWindow::on_LogInButton_clicked()
     }
 
     ui->PageWidget->setCurrentIndex(1);
-    */
+
 
     ui->LogInButton->setEnabled(true);
 }
@@ -122,20 +141,3 @@ void MainWindow::ResetRoleMenu()
         Item->widget()->deleteLater();
     }
 }
-
-void MainWindow::BackToAuthMenu()
-{
-    const QList<QDialog*> dialogs = findChildren<QDialog*>();
-    for (QDialog *dialog : dialogs) {
-        dialog->close();
-    }
-
-    ClearEdits();
-    DisableLabels();
-    ui->PageWidget->setCurrentIndex(0);
-    ResetRoleMenu();
-
-    LostConnectionDialog lostDialog(this);
-    lostDialog.exec();
-}
-

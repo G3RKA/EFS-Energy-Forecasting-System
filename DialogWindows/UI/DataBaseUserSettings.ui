@@ -47,7 +47,7 @@ QPushButton:pressed {
 	background-color: #a7c8fc;
 }</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout" stretch="2,2,10">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="2,2,10,4">
    <property name="spacing">
     <number>12</number>
    </property>
@@ -111,7 +111,7 @@ QPushButton:pressed {
      <property name="minimumSize">
       <size>
        <width>300</width>
-       <height>250</height>
+       <height>0</height>
       </size>
      </property>
      <property name="maximumSize">
@@ -230,7 +230,7 @@ QPushButton:pressed {
         </property>
        </widget>
       </item>
-      <item>
+      <item alignment="Qt::AlignmentFlag::AlignTop">
        <widget class="QPushButton" name="ConnectButton">
         <property name="minimumSize">
          <size>
@@ -248,7 +248,7 @@ QPushButton:pressed {
         </property>
        </widget>
       </item>
-      <item>
+      <item alignment="Qt::AlignmentFlag::AlignTop">
        <widget class="QPushButton" name="CloseButton">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
@@ -281,6 +281,19 @@ QPushButton:pressed {
       </item>
      </layout>
     </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Orientation::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
    </item>
   </layout>
  </widget>

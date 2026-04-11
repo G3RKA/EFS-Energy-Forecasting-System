@@ -3,14 +3,13 @@
 #include "UI/ui_DataBaseSettings.h"
 
 #include "DataBaseUserSettings.h"
+#include "DataBaseManager.h"
 
 #include <QIntValidator>
 #include <QRegularExpression>
 #include <QRegularExpressionValidator>
 #include <QDebug>
 #include <QSettings>
-#include <QSqlDatabase>
-#include <QSqlError>
 
 DataBaseSettings::DataBaseSettings(QWidget *parent)
     : QDialog(parent)
@@ -21,17 +20,22 @@ DataBaseSettings::DataBaseSettings(QWidget *parent)
     setWindowFlags(Qt::Dialog | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
 
     SetupDBStatus();
-    UpdateDBState();
+    DataBaseManager::instance().RequestDBState();
     SetupInputConstraints();
-    
+
     ui->ErrorLabel->setVisible(false);
 
     ui->ConnectButton->setDisabled(true);
 
+    connect(&DataBaseManager::instance(), &DataBaseManager::OnDataBaseStateSended, this, &DataBaseSettings::UpdateDBState);
+    connect(&DataBaseManager::instance(), &DataBaseManager::SettingsAnonymousResult, this,
+            &DataBaseSettings::OnSettingsAnonymousResult);
+    connect(&DataBaseManager::instance(), &DataBaseManager::SettingsUserResult, this, &DataBaseSettings::OnSettingsUserResult);
+
     connect(ui->HostEdit, &QLineEdit::textEdited, this, &DataBaseSettings::ConnectionDataChanged);
     connect(ui->PortEdit, &QLineEdit::textEdited, this, &DataBaseSettings::ConnectionDataChanged);
     connect(ui->NameEdit, &QLineEdit::textEdited, this, &DataBaseSettings::ConnectionDataChanged);
-    
+
     ConnectionDataChanged();
 }
 
@@ -49,24 +53,57 @@ void DataBaseSettings::on_ConnectButton_clicked()
 {
     ui->ConnectButton->setDisabled(true);
     SaveDatabaseConnectionSettings();
-    if (TryConnectToMysql())
-    {
+    DataBaseManager::instance().RequestTrySettingsAnonymous();
+}
+
+void DataBaseSettings::UpdateDBState(bool connected)
+{
+    ui->StatusInfoLabel->setText(connected ? "ПОДКЛЮЧЕНО" : "ОТКЛЮЧЕНО");
+}
+
+void DataBaseSettings::OnSettingsAnonymousResult(bool openUserDialog, bool showErrorLabel, const QString& errorLabelText)
+{
+    if (showErrorLabel) {
+        ui->ErrorLabel->setVisible(true);
+        ui->ErrorLabel->setText(errorLabelText);
+    } else {
+        ui->ErrorLabel->setVisible(false);
+    }
+
+    if (openUserDialog) {
         DataBaseUserSettings menu;
-        connect(&menu, &DataBaseUserSettings::ConnectRequested,
-                this, &DataBaseSettings::OnDatabaseUserSubmitted);
-
-        connect( this, &DataBaseSettings::CloseUserConnection,
-            &menu, &DataBaseUserSettings::OnCloseUserConnection);        
-
-        connect( this, &DataBaseSettings::LoginError,
-            &menu, &DataBaseUserSettings::OnLoginError);        
-
+        connect(&menu, &DataBaseUserSettings::ConnectRequested, this, &DataBaseSettings::OnDatabaseUserSubmitted);
+        connect(this, &DataBaseSettings::CloseUserConnection, &menu, &DataBaseUserSettings::OnCloseUserConnection);
+        connect(this, &DataBaseSettings::LoginError, &menu, &DataBaseUserSettings::OnLoginError);
         menu.exec();
     }
-    UpdateDBState();
+
+    DataBaseManager::instance().RequestDBState();
     ui->ConnectButton->setDisabled(false);
 }
 
+void DataBaseSettings::OnSettingsUserResult(bool success, bool unknownDatabase, bool badCredentials,
+                                            const QString& unknownDbMessage)
+{
+    DataBaseManager::instance().RequestDBState();
+
+    if (success) {
+        ui->ErrorLabel->setVisible(false);
+        emit CloseUserConnection();
+        return;
+    }
+
+    if (unknownDatabase) {
+        ui->ErrorLabel->setVisible(true);
+        ui->ErrorLabel->setText(unknownDbMessage);
+        emit CloseUserConnection();
+        return;
+    }
+
+    if (badCredentials) {
+        emit LoginError();
+    }
+}
 
 void DataBaseSettings::ConnectionDataChanged()
 {
@@ -85,19 +122,13 @@ void DataBaseSettings::ConnectionDataChanged()
 void DataBaseSettings::OnDatabaseUserSubmitted(const QString& user, const QString& password)
 {
     QSettings settings(AppConfig::GetSettingsPath(), QSettings::IniFormat);
-        settings.beginGroup("DataBase");
-            settings.setValue("User", user);
-            settings.setValue("Password", password);
-        settings.endGroup();
+    settings.beginGroup("DataBase");
+        settings.setValue("User", user.trimmed());
+        settings.setValue("Password", password.trimmed());
+    settings.endGroup();
     settings.sync();
 
-    bool success = TryConnectToMysqlWithUser(user, password);
-    UpdateDBState();
-    if (success)
-    {
-        ui->ErrorLabel->setVisible(false);
-        emit CloseUserConnection();
-    }
+    DataBaseManager::instance().RequestTrySettingsWithUser();
 }
 
 void DataBaseSettings::SetupDBStatus()
@@ -108,17 +139,6 @@ void DataBaseSettings::SetupDBStatus()
         ui->PortEdit->setText(settings.value("Port").toString().trimmed());
         ui->NameEdit->setText(settings.value("Name").toString().trimmed());
     settings.endGroup();
-}
-
-void DataBaseSettings::UpdateDBState()
-{
-    const QString connName = AppConfig::DatabaseName;
-    bool connected = false;
-    if (QSqlDatabase::contains(connName)) {
-        QSqlDatabase db = QSqlDatabase::database(connName);
-        connected = db.isValid() && db.isOpen();
-    }
-    ui->StatusInfoLabel->setText(connected ? "ПОДКЛЮЧЕНО" : "ОТКЛЮЧЕНО");
 }
 
 void DataBaseSettings::SetupInputConstraints()
@@ -138,130 +158,10 @@ void DataBaseSettings::SetupInputConstraints()
 void DataBaseSettings::SaveDatabaseConnectionSettings()
 {
     QSettings settings(AppConfig::GetSettingsPath(), QSettings::IniFormat);
-        settings.beginGroup("DataBase");
-            settings.setValue("Host", ui->HostEdit->text());
-            settings.setValue("Port", ui->PortEdit->text());
-            settings.setValue("Name", ui->NameEdit->text());
-        settings.endGroup();
+    settings.beginGroup("DataBase");
+    settings.setValue("Host", ui->HostEdit->text());
+    settings.setValue("Port", ui->PortEdit->text());
+    settings.setValue("Name", ui->NameEdit->text());
+    settings.endGroup();
     settings.sync();
-}
-
-bool DataBaseSettings::TryConnectToMysql()
-{
-    const QString kConnName = AppConfig::DatabaseName;
-    QString driver = "QMYSQL";
-
-    if (QSqlDatabase::contains(kConnName)) {
-        {
-            QSqlDatabase existing = QSqlDatabase::database(kConnName);
-            existing.close();
-        }
-        QSqlDatabase::removeDatabase(kConnName);
-    }
-
-    bool success = false;
-    {
-        QSqlDatabase db = QSqlDatabase::addDatabase(driver, kConnName);
-        db.setHostName(ui->HostEdit->text());
-        db.setPort(ui->PortEdit->text().toInt());
-        db.setDatabaseName(ui->NameEdit->text());
-        db.setUserName(QString());
-        db.setPassword(QString());
-
-        if (db.open()) {
-            qDebug() << "MySQL: подключение успешно;"
-                     << "хост:" << db.hostName() << "порт:" << db.port() << "БД:" << db.databaseName();
-            db.close();
-            success = true;
-        } else {
-            const QSqlError err = db.lastError();
-            const QString code = err.nativeErrorCode();
-            qDebug() << "MySQL:" << err.text() << "nativeErrorCode:" << code;
-
-            if (code == "2002" or code == "2003" or code == "2005") {
-                // CR_CONN_HOST_ERROR / CR_CONNECTION_ERROR / CR_UNKNOWN_HOST
-                qDebug() << "MySQL: не удалось подключиться к серверу по адресу"
-                         << QString("%1:%2").arg(ui->HostEdit->text(), ui->PortEdit->text());
-
-                ui->ErrorLabel->setVisible(true);
-                ui->ErrorLabel->setText(
-                    QString("Не удалось присоединиться к серверу по %1:%2")
-                        .arg(ui->HostEdit->text(), ui->PortEdit->text()));    
-            } else if (code == "1044" or code =="1045") {
-                // ER_DBACCESS_DENIED_ERROR 
-                qDebug() << "MySQL: Попытка присоединения к базе без пользователя.";
-                success = true;
-            } 
-        }
-    }
-
-    QSqlDatabase::removeDatabase(kConnName);
-    return success;
-}
-
-bool DataBaseSettings::TryConnectToMysqlWithUser(const QString& user, const QString& password)
-{
-    const QString kConnName = AppConfig::DatabaseName;
-    const QString driver = "QMYSQL";
-
-    if (QSqlDatabase::contains(kConnName)) {
-        {
-            QSqlDatabase existing = QSqlDatabase::database(kConnName);
-            existing.close();
-        }
-        QSqlDatabase::removeDatabase(kConnName);
-    }
-
-    bool success = false;
-    {
-        QSqlDatabase db = QSqlDatabase::addDatabase(driver, kConnName);
-        db.setHostName(ui->HostEdit->text());
-        db.setPort(ui->PortEdit->text().toInt());
-        db.setDatabaseName(ui->NameEdit->text());
-        db.setUserName(user);
-        db.setPassword(password);
-
-        if (db.open()) {
-            qDebug() << "MySQL: подключение успешно;"
-                     << "user:" << user
-                     << "host:" << db.hostName() << "port:" << db.port() << "db:" << db.databaseName();
-           
-            success = true;
-        } else {
-            const QSqlError err = db.lastError();
-            const QString code = err.nativeErrorCode();
-
-            if (code == "1049") {
-                // ER_BAD_DB_ERROR 
-                qDebug() << "MySQL: не удалось подключиться к базе данных — БД не найдена:"
-                         << ui->NameEdit->text();
-
-                ui->ErrorLabel->setVisible(true);
-                ui->ErrorLabel->setText(QString("Не удалось присоединиться к базе данных %1")
-                .arg(ui->NameEdit->text())); 
-                
-                emit CloseUserConnection();
-            }   
-
-            if (code == "1044" or code =="1045") {
-                // ER_DBACCESS_DENIED_ERROR 
-                qDebug() << "MySQL: Неверный логин или пароль для доступа.";
-                
-                emit LoginError();
-            } 
-
-            qDebug() << "MySQL: подключение не удалось:"
-                     << db.lastError().text()
-                     << "nativeErrorCode:" << db.lastError().nativeErrorCode();
-
-            db.close();
-        }
-    }
-
-    if (not(success))
-    {
-        QSqlDatabase::removeDatabase(kConnName);
-    }
-
-    return success;
 }

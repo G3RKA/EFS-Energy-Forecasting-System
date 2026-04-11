@@ -20,8 +20,8 @@ signals:
 
 private slots:
     void on_CancelButton_clicked();
-
     void on_SaveButton_clicked();
+    void OnUserUpdateFinished(bool success, const QString& login, const QString& name);
 
 private:
     bool IsPasswordValid(const QString& Password);
