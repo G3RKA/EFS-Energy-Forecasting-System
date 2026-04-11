@@ -5,7 +5,7 @@
 #include <QDateTime>
 #include <QSettings>
 
-bool LoginLockout::isLocked(int& RemainingSecondsOut)
+bool LoginLockout::IsLocked(int& RemainingSecondsOut)
 {
     QSettings Settings(AppConfig::LoginLockoutSettings());
     Settings.beginGroup(AppConfig::LoginSecurityGroup);
@@ -27,7 +27,7 @@ bool LoginLockout::isLocked(int& RemainingSecondsOut)
     return true;
 }
 
-void LoginLockout::registerInvalidCredentialsAttempt()
+void LoginLockout::RegisterInvalidCredentialsAttempt()
 {
     QSettings Settings(AppConfig::LoginLockoutSettings());
     Settings.beginGroup(AppConfig::LoginSecurityGroup);
@@ -46,16 +46,16 @@ void LoginLockout::registerInvalidCredentialsAttempt()
     Settings.endGroup();
 }
 
-void LoginLockout::clearOnSuccessfulLogin()
+void LoginLockout::ClearOnSuccessfulLogin()
 {
     QSettings Settings(AppConfig::LoginLockoutSettings());
     Settings.beginGroup(AppConfig::LoginSecurityGroup);
-    Settings.remove(AppConfig::LoginLockoutAttemptsKey);
-    Settings.remove(AppConfig::LoginLockoutUntilMsKey);
+        Settings.remove(AppConfig::LoginLockoutAttemptsKey);
+        Settings.remove(AppConfig::LoginLockoutUntilMsKey);
     Settings.endGroup();
 }
 
-QString LoginLockout::messageForRemainingSeconds(int RemainingSeconds)
+QString LoginLockout::MessageForRemainingSeconds(int RemainingSeconds)
 {
     if (RemainingSeconds <= 0) {
         return "Вход на этом компьютере временно заблокирован.";

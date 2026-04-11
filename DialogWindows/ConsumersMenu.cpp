@@ -89,6 +89,6 @@ void ConsumersMenu::OnConsumeTableItemChanged(QTableWidgetItem *Item)
 
 void ConsumersMenu::ConsumerAmountChanged(const QString& GroupName, int Amount)
 {
-    //
+    DataManager::instance().RequestUpdateConsumerGroupAmount(GroupName, Amount);
 }
 

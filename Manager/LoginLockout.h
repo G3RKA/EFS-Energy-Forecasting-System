@@ -6,10 +6,10 @@
 class LoginLockout
 {
 public:
-    static bool isLocked(int& RemainingSecondsOut);
-    static void registerInvalidCredentialsAttempt();
-    static void clearOnSuccessfulLogin();
-    static QString messageForRemainingSeconds(int RemainingSeconds);
+    static bool IsLocked(int& RemainingSecondsOut);
+    static void RegisterInvalidCredentialsAttempt();
+    static void ClearOnSuccessfulLogin();
+    static QString MessageForRemainingSeconds(int RemainingSeconds);
 };
 
 #endif // LOGINLOCKOUT_H

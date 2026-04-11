@@ -24,6 +24,7 @@ public:
     void RequestTrySettingsWithUser();
     void RequestUsersList();
     void RequestConsumerGroupsList();
+    void RequestUpdateConsumerGroupAmount(const QString& GroupName, int Amount);
     void RequestDeleteUser(const QString& Login);
     void RequestUpdateUser(const QString& Login, const QString& Name, const QString& Password);
     void RequestCreateUser(const QString& Login, const QString& Name, const QString& Role, const QString& PasswordHash);
@@ -43,6 +44,7 @@ signals:
     void OnTrySettingsWithUserRequested();
     void OnUsersListRequested();
     void OnConsumerGroupsListRequested();
+    void OnUpdateConsumerGroupAmountRequested(const QString& GroupName, int Amount);
     void OnDeleteUserRequested(const QString& Login);
     void OnUpdateUserRequested(const QString& Login, const QString& Name, const QString& Password);
     void OnCreateUserRequested(const QString& Login, const QString& Name, const QString& Role, const QString& PasswordHash);

@@ -30,6 +30,7 @@ public slots:
     void OnUpdateUserRequested(const QString& Login, const QString& Name, const QString& Password);
     void OnCreateUserRequested(const QString& Login, const QString& Name, const QString& Role, const QString& PasswordHash);
     void OnLoginVerifyRequested(const QString& Login, const QString& Password);
+    void OnUpdateConsumerGroupAmountRequested(const QString& GroupName, int Amount);
 
     // From Worker CSV
     void OnEnsureGroupsFromCSV(const QStringList& GroupNames);

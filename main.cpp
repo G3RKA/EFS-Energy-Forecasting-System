@@ -44,7 +44,5 @@ int main(int argc, char *argv[])
 
     W.show();
 
-    qDebug() << QDateTime::currentDateTime();
-
     return App.exec(); 
 }

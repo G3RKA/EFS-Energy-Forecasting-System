@@ -60,8 +60,8 @@ void MainWindow::on_LogInButton_clicked()
     DisableLabels();
 
     int RemainingSec = 0;
-    if (LoginLockout::isLocked(RemainingSec)) {
-        ui->ErrorLabel->setText(LoginLockout::messageForRemainingSeconds(RemainingSec));
+    if (LoginLockout::IsLocked(RemainingSec)) {
+        ui->ErrorLabel->setText(LoginLockout::MessageForRemainingSeconds(RemainingSec));
         ui->ErrorLabel->setVisible(true);
         ui->LogInButton->setEnabled(true);
         return;
@@ -74,7 +74,7 @@ void MainWindow::on_LogInButton_clicked()
     {
         if (AppConfig::CheckSAPassword(LoginText, PasswordText))
         {
-            LoginLockout::clearOnSuccessfulLogin();
+            LoginLockout::ClearOnSuccessfulLogin();
 
             AdminMenu* Menu = new AdminMenu(this);
             ui->RoleLayout->addWidget(Menu);
@@ -112,7 +112,7 @@ void MainWindow::OnLoginVerifyFinished(bool Success, const QString& DbRole, cons
         return;
     }
 
-    LoginLockout::clearOnSuccessfulLogin();
+    LoginLockout::ClearOnSuccessfulLogin();
 
     const QString UserLabel = DisplayName.trimmed().isEmpty() ? ui->LoginLine->text().trimmed() : DisplayName;
     SetUserName(UserLabel);
@@ -158,10 +158,10 @@ void MainWindow::EnableWrongPassword()
 
 void MainWindow::ShowCredentialError()
 {
-    LoginLockout::registerInvalidCredentialsAttempt();
+    LoginLockout::RegisterInvalidCredentialsAttempt();
     int RemainingSec = 0;
-    if (LoginLockout::isLocked(RemainingSec)) {
-        ui->ErrorLabel->setText(LoginLockout::messageForRemainingSeconds(RemainingSec));
+    if (LoginLockout::IsLocked(RemainingSec)) {
+        ui->ErrorLabel->setText(LoginLockout::MessageForRemainingSeconds(RemainingSec));
     } else {
         ui->ErrorLabel->setText(QString("Неверный логин или пароль"));
     }
@@ -172,6 +172,7 @@ void MainWindow::ClearEdits()
 {
     ui->LoginLine->clear();
     ui->PasswordLine->clear();
+    ui->LogInButton->setEnabled(true);
 }
 
 void MainWindow::DisableLabels()

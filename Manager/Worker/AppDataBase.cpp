@@ -69,7 +69,7 @@ void AppDataBase::GetAllConsumerGroups()
     }
 
     QSqlQuery Query(Database);
-    Query.prepare(QStringLiteral("SELECT `Name`, `Amount` FROM %1 ORDER BY `Name`")
+    Query.prepare(QStringLiteral("SELECT Name, Amount FROM %1 ORDER BY Name")
                       .arg(AppConfig::DatabaseGroupTable));
 
     if (!Query.exec()) {
@@ -84,6 +84,29 @@ void AppDataBase::GetAllConsumerGroups()
         Rows.append(std::move(Row));
     }
     emit ConsumerGroupsLoaded(Rows);
+}
+
+void AppDataBase::OnUpdateConsumerGroupAmountRequested(const QString& GroupName, int Amount)
+{
+    QSqlDatabase Database;
+    if (!GetOpenDatabase(Database)) {
+        return;
+    }
+
+    if (Amount < 0) {
+        return;
+    }
+
+    QSqlQuery Query(Database);
+    Query.prepare(QStringLiteral("UPDATE %1 SET Amount = :amount WHERE Name = :name")
+                      .arg(AppConfig::DatabaseGroupTable));
+    Query.bindValue(":amount", Amount);
+    Query.bindValue(":name", GroupName);
+
+    if (!Query.exec()) {
+        qDebug() << "DataBase: не удалось обновить количество в группе:" << Query.lastError().text();
+        return;
+    }
 }
 
 void AppDataBase::OnDeleteUserRequested(const QString& Login)

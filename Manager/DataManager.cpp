@@ -66,6 +66,7 @@ void DataManager::Init()
     connect(this, &DataManager::OnTrySettingsWithUserRequested, m_Worker, &AppDataBase::OnTrySettingsWithUser);
     connect(this, &DataManager::OnUsersListRequested, m_Worker, &AppDataBase::GetAllUsers);
     connect(this, &DataManager::OnConsumerGroupsListRequested, m_Worker, &AppDataBase::GetAllConsumerGroups);
+    connect(this, &DataManager::OnUpdateConsumerGroupAmountRequested, m_Worker, &AppDataBase::OnUpdateConsumerGroupAmountRequested);
     connect(this, &DataManager::OnDeleteUserRequested, m_Worker, &AppDataBase::OnDeleteUserRequested);
     connect(this, &DataManager::OnUpdateUserRequested, m_Worker, &AppDataBase::OnUpdateUserRequested);
     connect(this, &DataManager::OnCreateUserRequested, m_Worker, &AppDataBase::OnCreateUserRequested);
@@ -103,6 +104,11 @@ void DataManager::RequestUsersList()
 void DataManager::RequestConsumerGroupsList()
 {
     emit OnConsumerGroupsListRequested();
+}
+
+void DataManager::RequestUpdateConsumerGroupAmount(const QString& GroupName, int Amount)
+{
+    emit OnUpdateConsumerGroupAmountRequested(GroupName, Amount);
 }
 
 void DataManager::RequestDeleteUser(const QString& Login)
