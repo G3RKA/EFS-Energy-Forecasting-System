@@ -39,6 +39,8 @@ void DataMenu::on_LoadButton_clicked()
         return;
     }
 
+    QMessageBox::information(this, "Загрузка CSV", "Ожидайте окончания загрузки.");
+
     DataManager::instance().RequestProcessCSV(path);
 }
 
@@ -49,7 +51,7 @@ void DataMenu::on_CloseButton_clicked()
 
 void DataMenu::OnCSVProcessingFinished(bool success, const QString& message)
 {
-    const QString title = QStringLiteral("Загрузка CSV");
+    const QString title = "Загрузка CSV";
     if (success) {
         QMessageBox::information(this, title,
                                  message.isEmpty() ? QStringLiteral("Обработка завершена.") : message);
