@@ -2,6 +2,9 @@
 #define DATAMENU_H
 
 #include <QDialog>
+#include <QPointer>
+
+#include <QMessageBox>
 
 namespace Ui {
 class DataMenu;
@@ -23,6 +26,10 @@ private slots:
 
 private:
     Ui::DataMenu *ui;
+
+    void SetupButton(QMessageBox *Box);
+
+    QPointer<QMessageBox> CSVWaitDialog;
 };
 
 #endif // DATAMENU_H

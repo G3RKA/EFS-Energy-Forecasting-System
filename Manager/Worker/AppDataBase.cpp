@@ -1,5 +1,6 @@
 #include "AppDataBase.h"
 
+#include <QDateTime>
 #include <QMetaObject>
 #include <QSettings>
 #include <QSqlDatabase>
@@ -134,6 +135,8 @@ void AppDataBase::OnLoginVerifyRequested(const QString& login, const QString& pa
         return;
     }
 
+    UpdateLastVisitForLogin(login);
+
     emit LoginVerifyFinished(true, dbRole, displayName, false);
 }
 
@@ -264,6 +267,26 @@ bool AppDataBase::GetOpenDatabase(QSqlDatabase& db)
             emit OnLostConnection();
             return false;
         }
+    }
+    return true;
+}
+
+bool AppDataBase::UpdateLastVisitForLogin(const QString& login)
+{
+    QSqlDatabase db;
+    if (!GetOpenDatabase(db)) {
+        return false;
+    }
+
+    QSqlQuery query(db);
+    query.prepare(QStringLiteral("UPDATE %1 SET LastVisit = :lastVisit WHERE Login = :login")
+                      .arg(AppConfig::DatabaseUsersTable));
+    const QDateTime localNow = QDateTime::currentDateTime();
+    query.bindValue(":lastVisit", localNow.toString("yyyy-MM-dd HH:mm:ss"));
+    query.bindValue(":login", login);
+    if (!query.exec()) {
+        qDebug() << "DataBase: не удалось обновить LastVisit:" << query.lastError().text();
+        return false;
     }
     return true;
 }

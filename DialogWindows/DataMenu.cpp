@@ -2,7 +2,9 @@
 #include "UI/ui_DataMenu.h"
 
 #include "DataManager.h"
+#include "UploadError.h"
 
+#include <QAbstractButton>
 #include <QFileDialog>
 #include <QMessageBox>
 
@@ -26,6 +28,10 @@ DataMenu::DataMenu(QWidget *parent)
 
 DataMenu::~DataMenu()
 {
+    if (CSVWaitDialog) {
+        delete CSVWaitDialog.data();
+        CSVWaitDialog.clear();
+    }
     delete ui;
 }
 
@@ -39,7 +45,23 @@ void DataMenu::on_LoadButton_clicked()
         return;
     }
 
-    QMessageBox::information(this, "Загрузка CSV", "Ожидайте окончания загрузки.");
+    ui->LoadButton->setEnabled(false);
+
+    if (CSVWaitDialog) {
+        delete CSVWaitDialog.data();
+        CSVWaitDialog.clear();
+    }
+
+    auto *waitBox = new QMessageBox(QMessageBox::Information,
+                                     "Загрузка CSV",
+                                     "Обработка в процессе!",
+                                     QMessageBox::Ok,
+                                     this);
+    waitBox->setWindowModality(Qt::WindowModal);
+    SetupButton(waitBox);
+    CSVWaitDialog = waitBox;
+
+    waitBox->show();
 
     DataManager::instance().RequestProcessCSV(path);
 }
@@ -51,12 +73,35 @@ void DataMenu::on_CloseButton_clicked()
 
 void DataMenu::OnCSVProcessingFinished(bool success, const QString& message)
 {
-    const QString title = "Загрузка CSV";
-    if (success) {
-        QMessageBox::information(this, title,
-                                 message.isEmpty() ? QStringLiteral("Обработка завершена.") : message);
-    } else {
-        QMessageBox::warning(this, title,
-                               message.isEmpty() ? QStringLiteral("Ошибка обработки файла.") : message);
+    if (CSVWaitDialog) {
+        CSVWaitDialog->deleteLater();
+        CSVWaitDialog.clear();
+    }
+
+    ui->LoadButton->setEnabled(true);
+
+    if (success)
+    {
+        QMessageBox box(this);
+        box.setWindowTitle("Загрузка CSV");
+        box.setText("Обработка завершена!");
+        box.setIcon(QMessageBox::Information);
+        box.setStandardButtons(QMessageBox::Ok);
+        SetupButton(&box);
+        
+        box.exec(); 
+    }
+    else
+    {
+        UploadError m(message, this);
+        m.exec();
+    }
+
+}
+
+void DataMenu::SetupButton(QMessageBox *Box)
+{
+    if (QAbstractButton *okBtn = Box->button(QMessageBox::Ok)) {
+        okBtn->setStyleSheet("QPushButton { padding: 5px; }");
     }
 }

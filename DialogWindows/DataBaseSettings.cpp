@@ -122,9 +122,9 @@ void DataBaseSettings::ConnectionDataChanged()
 void DataBaseSettings::OnDatabaseUserSubmitted(const QString& user, const QString& password)
 {
     QSettings settings(AppConfig::GetSettingsPath(), QSettings::IniFormat);
-    settings.beginGroup("DataBase");
-        settings.setValue("User", user.trimmed());
-        settings.setValue("Password", password.trimmed());
+    settings.beginGroup(AppConfig::DatabaseGroup);
+        settings.setValue(AppConfig::DatabaseLoginKey, user.trimmed());
+        settings.setValue(AppConfig::DatabasePasswordKey, password.trimmed());
     settings.endGroup();
     settings.sync();
 
@@ -134,10 +134,10 @@ void DataBaseSettings::OnDatabaseUserSubmitted(const QString& user, const QStrin
 void DataBaseSettings::SetupDBStatus()
 {
     QSettings settings(AppConfig::GetSettingsPath(), QSettings::IniFormat);
-    settings.beginGroup("DataBase");
-        ui->HostEdit->setText(settings.value("Host").toString().trimmed());
-        ui->PortEdit->setText(settings.value("Port").toString().trimmed());
-        ui->NameEdit->setText(settings.value("Name").toString().trimmed());
+    settings.beginGroup(AppConfig::DatabaseGroup);
+        ui->HostEdit->setText(settings.value(AppConfig::DatabaseHostKey).toString().trimmed());
+        ui->PortEdit->setText(settings.value(AppConfig::DatabasePortKey).toString().trimmed());
+        ui->NameEdit->setText(settings.value(AppConfig::DatabaseNameKey).toString().trimmed());
     settings.endGroup();
 }
 
@@ -158,10 +158,10 @@ void DataBaseSettings::SetupInputConstraints()
 void DataBaseSettings::SaveDatabaseConnectionSettings()
 {
     QSettings settings(AppConfig::GetSettingsPath(), QSettings::IniFormat);
-    settings.beginGroup("DataBase");
-    settings.setValue("Host", ui->HostEdit->text());
-    settings.setValue("Port", ui->PortEdit->text());
-    settings.setValue("Name", ui->NameEdit->text());
+    settings.beginGroup(AppConfig::DatabaseGroup);
+        settings.setValue(AppConfig::DatabaseHostKey , ui->HostEdit->text());
+        settings.setValue(AppConfig::DatabasePortKey, ui->PortEdit->text());
+        settings.setValue(AppConfig::DatabaseNameKey, ui->NameEdit->text());
     settings.endGroup();
     settings.sync();
 }

@@ -5,6 +5,7 @@
 #include <QFontDatabase>
 #include <QDebug>
 #include <QApplication>
+#include <qdatetime.h>
 
 void InitAppFont(QApplication& app)
 {
@@ -40,6 +41,8 @@ int main(int argc, char *argv[])
     DataManager::instance().ConnectToDatabase();
 
     w.show();
+
+    qDebug() << QDateTime::currentDateTime();
 
     return a.exec(); 
 }

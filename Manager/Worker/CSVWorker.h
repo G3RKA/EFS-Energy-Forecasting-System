@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QStringList>
 
 class CSVWorker : public QObject
 {
@@ -15,6 +16,11 @@ public slots:
 
 signals:
     void CSVProcessingFinished(bool success, const QString& message);
+
+private:
+    QStringList SplitCSVLine(const QString& line);
+    bool HeaderMatchesExpected(const QStringList& cells);
+    bool DataRowIsValid(const QStringList& cells);
 };
 
 #endif // CSVWORKER_H

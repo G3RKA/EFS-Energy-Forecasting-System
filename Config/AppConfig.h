@@ -10,6 +10,14 @@ public:
     static const QString DatabaseName;
     static const QString DatabaseAnalystStr;
     static const QString DatabaseEnergyStr;
+
+    static const QString DatabaseGroup;
+    static const QString DatabaseHostKey;
+    static const QString DatabasePortKey;
+    static const QString DatabaseNameKey;
+    static const QString DatabaseLoginKey;
+    static const QString DatabasePasswordKey;
+
     static const QString DatabaseUsersTable;
     static const QString DatabaseLogsTable;
 

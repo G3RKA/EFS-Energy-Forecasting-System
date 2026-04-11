@@ -19,9 +19,16 @@ const QString AppConfig::DatabaseEnergyStr = "energy";
 const QString AppConfig::DatabaseUsersTable = "user";
 const QString AppConfig::DatabaseLogsTable = "logs";
 
-const QString AppConfig::LoginSecurityGroup = QStringLiteral("LoginSecurity");
-const QString AppConfig::LoginLockoutAttemptsKey = QStringLiteral("failedAttempts");
-const QString AppConfig::LoginLockoutUntilMsKey = QStringLiteral("lockoutUntilMs");
+const QString AppConfig::DatabaseGroup = "DataBase";
+const QString AppConfig::DatabaseHostKey = "Host";
+const QString AppConfig::DatabasePortKey = "Port";
+const QString AppConfig::DatabaseNameKey = "Name";
+const QString AppConfig::DatabaseLoginKey = "User";
+const QString AppConfig::DatabasePasswordKey = "Password";
+
+const QString AppConfig::LoginSecurityGroup = "LoginSecurity";
+const QString AppConfig::LoginLockoutAttemptsKey = "failedAttempts";
+const QString AppConfig::LoginLockoutUntilMsKey = "lockoutUntilMs";
 
 QSettings AppConfig::LoginLockoutSettings()
 {

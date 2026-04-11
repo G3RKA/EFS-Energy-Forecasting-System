@@ -42,6 +42,7 @@ signals:
 private:
     bool IternalConnectToDatabase();
     bool GetOpenDatabase(QSqlDatabase& db);
+    bool UpdateLastVisitForLogin(const QString& login);
 };
 
 #endif // APPDATABASE_H
