@@ -38,7 +38,7 @@ void AppDataBase::GetAllUsers()
     }
 
     QSqlQuery Query(Database);
-    Query.prepare(QStringLiteral("SELECT Login, Name, Role, LastVisit FROM %1 ORDER BY Login")
+    Query.prepare(QString("SELECT Login, Name, Role, LastVisit FROM %1 ORDER BY Login")
                       .arg(AppConfig::DatabaseUsersTable));
 
     if (!Query.exec()) {
@@ -69,7 +69,7 @@ void AppDataBase::GetAllConsumerGroups()
     }
 
     QSqlQuery Query(Database);
-    Query.prepare(QStringLiteral("SELECT Name, Amount FROM %1 ORDER BY Name")
+    Query.prepare(QString("SELECT Name, Amount FROM %1 ORDER BY Name")
                       .arg(AppConfig::DatabaseGroupTable));
 
     if (!Query.exec()) {
@@ -98,7 +98,7 @@ void AppDataBase::OnUpdateConsumerGroupAmountRequested(const QString& GroupName,
     }
 
     QSqlQuery Query(Database);
-    Query.prepare(QStringLiteral("UPDATE %1 SET Amount = :amount WHERE Name = :name")
+    Query.prepare(QString("UPDATE %1 SET Amount = :amount WHERE Name = :name")
                       .arg(AppConfig::DatabaseGroupTable));
     Query.bindValue(":amount", Amount);
     Query.bindValue(":name", GroupName);
@@ -115,8 +115,8 @@ void AppDataBase::OnDeleteUserRequested(const QString& Login)
     QSqlDatabase Database;
     if (GetOpenDatabase(Database)) {
         QSqlQuery Query(Database);
-        Query.prepare(QStringLiteral("DELETE FROM %1 WHERE Login = :login").arg(AppConfig::DatabaseUsersTable));
-        Query.bindValue(QStringLiteral(":login"), Login);
+        Query.prepare(QString("DELETE FROM %1 WHERE Login = :login").arg(AppConfig::DatabaseUsersTable));
+        Query.bindValue(":login", Login);
         if (Query.exec()) {
             Ok = true;
         } else {
@@ -133,15 +133,15 @@ void AppDataBase::OnUpdateUserRequested(const QString& Login, const QString& Nam
     if (GetOpenDatabase(Database)) {
         QSqlQuery Query(Database);
         if (Password.isEmpty()) {
-            Query.prepare(QStringLiteral("UPDATE %1 SET Name = :name WHERE Login = :login").arg(AppConfig::DatabaseUsersTable));
-            Query.bindValue(QStringLiteral(":name"), Name);
-            Query.bindValue(QStringLiteral(":login"), Login);
+            Query.prepare(QString("UPDATE %1 SET Name = :name WHERE Login = :login").arg(AppConfig::DatabaseUsersTable));
+            Query.bindValue(":name", Name);
+            Query.bindValue(":login", Login);
         } else {
-            Query.prepare(QStringLiteral("UPDATE %1 SET Name = :name, Password = :password WHERE Login = :login")
+            Query.prepare(QString("UPDATE %1 SET Name = :name, Password = :password WHERE Login = :login")
                               .arg(AppConfig::DatabaseUsersTable));
-            Query.bindValue(QStringLiteral(":name"), Name);
-            Query.bindValue(QStringLiteral(":password"), Password);
-            Query.bindValue(QStringLiteral(":login"), Login);
+            Query.bindValue(":name", Name);
+            Query.bindValue(":password", Password);
+            Query.bindValue(":login", Login);
         }
 
         if (Query.exec()) {
@@ -161,9 +161,9 @@ void AppDataBase::OnLoginVerifyRequested(const QString& Login, const QString& Pa
     }
 
     QSqlQuery Query(Database);
-    Query.prepare(QStringLiteral("SELECT Role, Password, Name FROM %1 WHERE Login = :login")
+    Query.prepare(QString("SELECT Role, Password, Name FROM %1 WHERE Login = :login")
                       .arg(AppConfig::DatabaseUsersTable));
-    Query.bindValue(QStringLiteral(":login"), Login);
+    Query.bindValue(":login", Login);
     if (!Query.exec()) {
         qDebug() << "DataBase: не удалось проверить вход:" << Query.lastError().text();
         emit LoginVerifyFinished(false, QString(), QString(), false);
