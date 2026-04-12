@@ -19,6 +19,7 @@ const QString AppConfig::DatabaseEnergyStr = "energy";
 const QString AppConfig::DatabaseUsersTable = "user";
 const QString AppConfig::DatabaseLogsTable = "logs";
 const QString AppConfig::DatabaseGroupTable = "consumergroup";
+const QString AppConfig::DatabaseConsumptionTable = "consumergroup";
 
 const QString AppConfig::DatabaseGroup = "DataBase";
 const QString AppConfig::DatabaseHostKey = "Host";

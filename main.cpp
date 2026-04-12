@@ -1,6 +1,9 @@
 #include "MainMenu/MainWindow.h"
 #include "DataTypes/AccountUserRow.h"
+#include "DataTypes/AuditActionRow.h"
+#include "DataTypes/ConsumerGroupConsumptionRow.h"
 #include "DataTypes/ConsumerGroupRow.h"
+#include "DataTypes/ConsumerGroupTotalsRow.h"
 #include "Manager/DataManager.h"
 
 #include <QFontDatabase>
@@ -33,7 +36,10 @@ int main(int argc, char *argv[])
     InitAppFont(App);
 
     qRegisterMetaType<QVector<AccountUserRow>>("QVector<AccountUserRow>");
+    qRegisterMetaType<QVector<AuditActionRow>>("QVector<AuditActionRow>");
+    qRegisterMetaType<QVector<ConsumerGroupConsumptionRow>>("QVector<ConsumerGroupConsumptionRow>");
     qRegisterMetaType<QVector<ConsumerGroupRow>>("QVector<ConsumerGroupRow>");
+    qRegisterMetaType<QVector<ConsumerGroupTotalsRow>>("QVector<ConsumerGroupTotalsRow>");
 
     DataManager::instance().Init();
     MainWindow W;

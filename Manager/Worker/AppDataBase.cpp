@@ -203,7 +203,7 @@ void AppDataBase::OnEnsureGroupsFromCSV(const QStringList& GroupNames)
         }
 
         QSqlQuery ExistsQuery(Database);
-        ExistsQuery.prepare(QStringLiteral("SELECT 1 FROM %1 WHERE `Name` = :name LIMIT 1")
+        ExistsQuery.prepare(QString("SELECT 1 FROM %1 WHERE `Name` = :name LIMIT 1")
                                 .arg(AppConfig::DatabaseGroupTable));
         ExistsQuery.bindValue(":name", GroupName);
         if (!ExistsQuery.exec()) {
@@ -215,7 +215,7 @@ void AppDataBase::OnEnsureGroupsFromCSV(const QStringList& GroupNames)
         }
 
         QSqlQuery InsertQuery(Database);
-        InsertQuery.prepare(QStringLiteral("INSERT INTO %1 (`Name`) VALUES (:name)")
+        InsertQuery.prepare(QString("INSERT INTO %1 (`Name`) VALUES (:name)")
                                  .arg(AppConfig::DatabaseGroupTable));
         InsertQuery.bindValue(":name", GroupName);
         if (!InsertQuery.exec()) {
@@ -366,7 +366,7 @@ bool AppDataBase::UpdateLastVisitForLogin(const QString& Login)
     }
 
     QSqlQuery Query(Database);
-    Query.prepare(QStringLiteral("UPDATE %1 SET LastVisit = :lastVisit WHERE Login = :login")
+    Query.prepare(QString("UPDATE %1 SET LastVisit = :lastVisit WHERE Login = :login")
                       .arg(AppConfig::DatabaseUsersTable));
     const QDateTime LocalNow = QDateTime::currentDateTime();
     Query.bindValue(":lastVisit", LocalNow.toString("yyyy-MM-dd HH:mm:ss"));
@@ -449,7 +449,7 @@ void AppDataBase::OnTrySettingsWithUser()
     Settings.endGroup();
 
     const QString ConnRegistryName = AppConfig::DatabaseName;
-    const QString Driver = QStringLiteral("QMYSQL");
+    const QString Driver = "QMYSQL";
 
     if (QSqlDatabase::contains(ConnRegistryName)) {
         {

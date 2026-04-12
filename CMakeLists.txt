@@ -22,7 +22,10 @@ set(MANAGER Manager)
 
 set(PROJECT_HEADERS
     ${CONFIG}/DataTypes/AccountUserRow.h
+    ${CONFIG}/DataTypes/AuditActionRow.h
+    ${CONFIG}/DataTypes/ConsumerGroupConsumptionRow.h
     ${CONFIG}/DataTypes/ConsumerGroupRow.h
+    ${CONFIG}/DataTypes/ConsumerGroupTotalsRow.h
     ${CONFIG}/AppConfig.h
     ${MANAGER}/Worker/AppDataBase.h
     ${MANAGER}/Worker/CSVWorker.h
