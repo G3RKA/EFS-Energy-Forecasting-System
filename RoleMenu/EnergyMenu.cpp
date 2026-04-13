@@ -27,8 +27,6 @@ EnergyMenu::EnergyMenu(QWidget *Parent)
     connect(&DataManager::instance(), &DataManager::ForecastRowsLoaded, this, &EnergyMenu::FillForecastTable);
     connect(&ForecastManager::instance(), &ForecastManager::RemainingTimeToNextFullHour, this,
             &EnergyMenu::OnRemainingTimeToNextFullHour);
-    connect(&ForecastManager::instance(), &ForecastManager::FullHourReached, this,
-            &EnergyMenu::OnForecastFullHourReached);
 
     DataManager::instance().RequestForecastDataForDateAndHour(QDate::currentDate(), QTime::currentTime().hour());
 }
@@ -48,11 +46,6 @@ void EnergyMenu::OnRemainingTimeToNextFullHour(qint64 remainingMs)
     ui->TimeRemLabel->setText(ForecastManager::FormatRemainingTime(remainingMs));
 }
 
-void EnergyMenu::OnForecastFullHourReached()
-{
-    DataManager::instance().RequestForecastDataForDateAndHour(QDate::currentDate(), QTime::currentTime().hour());
-}
-
 void EnergyMenu::FillForecastTable(const QVector<ConsumerGroupConsumptionRow>& Rows)
 {
     const QSignalBlocker Blocker(ui->EnergyTable);
@@ -66,14 +59,22 @@ void EnergyMenu::FillForecastTable(const QVector<ConsumerGroupConsumptionRow>& R
     };
     const QLocale Loc = QLocale::system();
 
-    double TotalConsumption = 0;
+    double TotalConsumption = 0.0;
     for (const ConsumerGroupConsumptionRow& Row : Rows) {
         const int R = ui->EnergyTable->rowCount();
         ui->EnergyTable->insertRow(R);
         ui->EnergyTable->setItem(R, 0, MakeCell(Row.ConsumerGroup));
         ui->EnergyTable->setItem(R, 1, MakeCell(QString::number(Row.ConsumerCount)));
-        ui->EnergyTable->setItem(R, 2, MakeCell(Loc.toString(Row.Consumption, 'f', 2)));
-        TotalConsumption += Row.Consumption;
+        if (Row.Consumption >= 0.0)
+        {
+            ui->EnergyTable->setItem(R, 2, MakeCell(Loc.toString(Row.Consumption, 'f', 2)));
+            TotalConsumption += Row.Consumption;
+        }
+        else 
+        {
+            ui->EnergyTable->setItem(R, 2, MakeCell("Нет данных"));
+        }
+        
     }
     ui->SummaryInfoText->setText(Loc.toString(TotalConsumption, 'f', 2));
 }

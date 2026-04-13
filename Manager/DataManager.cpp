@@ -76,6 +76,8 @@ void DataManager::Init()
     connect(this, &DataManager::OnConsumptionDataForGroupAndDateRequested, m_Worker,
             &AppDataBase::GetConsumptionDataForGroupAndDate);
     connect(this, &DataManager::OnForecastDataForDateAndHourRequested, m_Worker, &AppDataBase::GetForecastDataForDateAndHour);
+    connect(this, &DataManager::OnGenerateForecastForDateAndHourRequested, m_Worker,
+            &AppDataBase::GenerateForecastForDateAndHour);
     connect(this, &DataManager::OnUpdateConsumerGroupAmountRequested, m_Worker, &AppDataBase::OnUpdateConsumerGroupAmountRequested);
     connect(this, &DataManager::OnUpdateConsumptionEntryRequested, m_Worker, &AppDataBase::OnUpdateConsumptionEntryRequested);
     connect(this, &DataManager::OnDeleteUserRequested, m_Worker, &AppDataBase::OnDeleteUserRequested);
@@ -135,6 +137,11 @@ void DataManager::RequestConsumptionDataForGroupAndDate(int GroupId, const QDate
 void DataManager::RequestForecastDataForDateAndHour(const QDate& Date, int Hour)
 {
     emit OnForecastDataForDateAndHourRequested(Date, Hour);
+}
+
+void DataManager::RequestGenerateForecastForDateAndHour(const QDate& Date, int Hour)
+{
+    emit OnGenerateForecastForDateAndHourRequested(Date, Hour);
 }
 
 void DataManager::RequestUpdateConsumerGroupAmount(const QString& GroupName, int Amount)

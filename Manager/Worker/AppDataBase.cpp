@@ -8,6 +8,7 @@
 #include <QSqlDatabase>
 #include <QSqlError>
 #include <QSqlQuery>
+#include <QVariant>
 
 #include "AppConfig.h"
 #include "bcrypt.hpp"
@@ -254,6 +255,95 @@ void AppDataBase::GetForecastDataForDateAndHour(QDate Date, int Hour)
         Rows.append(std::move(Row));
     }
     emit ForecastRowsLoaded(Rows);
+}
+
+void AppDataBase::GenerateForecastForDateAndHour(QDate Date, int Hour)
+{
+    if (!Date.isValid() || Hour < 0 || Hour > 23) {
+        return;
+    }
+
+    QSqlDatabase Database;
+    if (!GetOpenDatabase(Database)) {
+        return;
+    }
+
+    QSqlQuery GroupsQuery(Database);
+    GroupsQuery.prepare(QString("SELECT `GroupID`, `Amount` FROM `%1` ORDER BY `GroupID`")
+                            .arg(AppConfig::DatabaseGroupTable));
+    if (!GroupsQuery.exec()) {
+        qDebug() << "DataBase: не удалось загрузить группы для прогноза:" << GroupsQuery.lastError().text();
+        return;
+    }
+
+    const int Month = Date.month();
+    const int DayOfWeek = Date.dayOfWeek();
+
+    QSqlQuery DailyAverageQuery(Database);
+    DailyAverageQuery.prepare(QString(
+        "SELECT AVG(`Consuption` / `ConsumerAmount`) "
+        "FROM `%1` "
+        "WHERE `GroupID` = :gid "
+        "  AND `Hour` = :hour "
+        "  AND MONTH(`Date`) = :month "
+        "  AND WEEKDAY(`Date`) + 1 = :dow "
+        "  AND `ConsumerAmount` > 0")
+                                  .arg(AppConfig::DatabaseConsumptionTable));
+
+    QSqlQuery UpsertQuery(Database);
+    UpsertQuery.prepare(QString(
+        "INSERT INTO `%1` (`GroupID`, `Date`, `Hour`, `ConsumerAmount`, `Consuption`) "
+        "VALUES (:gid, :date, :hour, :ca, :cons) "
+        "ON DUPLICATE KEY UPDATE "
+        "`ConsumerAmount` = VALUES(`ConsumerAmount`), "
+        "`Consuption` = VALUES(`Consuption`)")
+                            .arg(AppConfig::DatabaseForecastTable));
+
+    while (GroupsQuery.next()) {
+        const int GroupId = GroupsQuery.value(0).toInt();
+        const int CurrentConsumers = GroupsQuery.value(1).toInt();
+        if (GroupId <= 0 || CurrentConsumers < 0) {
+            continue;
+        }
+
+        DailyAverageQuery.bindValue(":gid", GroupId);
+        DailyAverageQuery.bindValue(":hour", Hour);
+        DailyAverageQuery.bindValue(":month", Month);
+        DailyAverageQuery.bindValue(":dow", DayOfWeek);
+
+        if (!DailyAverageQuery.exec()) {
+            qDebug() << "DataBase: не удалось рассчитать среднее потребление для прогноза:"
+                     << DailyAverageQuery.lastError().text();
+            continue;
+        }
+
+        double ForecastConsumption = -1.0;
+        bool HasData = false;
+        if (DailyAverageQuery.next()) {
+            const QVariant AvgPerConsumer = DailyAverageQuery.value(0);
+            if (!AvgPerConsumer.isNull()) {
+                HasData = true;
+                ForecastConsumption = AvgPerConsumer.toDouble() * CurrentConsumers;
+            }
+        }
+
+        if (!HasData) {
+            qDebug() << "DataBase: прогноз - нет данных для GroupID" << GroupId
+                     << "на" << Date << "час" << Hour;
+            continue;
+        }
+
+        UpsertQuery.bindValue(":gid", GroupId);
+        UpsertQuery.bindValue(":date", Date);
+        UpsertQuery.bindValue(":hour", Hour);
+        UpsertQuery.bindValue(":ca", CurrentConsumers);
+        UpsertQuery.bindValue(":cons", ForecastConsumption);
+        if (!UpsertQuery.exec()) {
+            qDebug() << "DataBase: не удалось сохранить прогноз:" << UpsertQuery.lastError().text();
+        }
+    }
+
+    GetForecastDataForDateAndHour(Date, Hour);
 }
 
 void AppDataBase::OnUpdateConsumerGroupAmountRequested(const QString& GroupName, int Amount)

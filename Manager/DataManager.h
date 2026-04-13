@@ -30,6 +30,7 @@ public:
     void RequestConsumerGroupsList();
     void RequestConsumptionDataForGroupAndDate(int GroupId, const QDate& Date);
     void RequestForecastDataForDateAndHour(const QDate& Date, int Hour);
+    void RequestGenerateForecastForDateAndHour(const QDate& Date, int Hour);
     void RequestUpdateConsumerGroupAmount(const QString& GroupName, int Amount);
     void RequestUpdateConsumptionEntry(int GroupId, const QDate& Date, int Hour, int ConsumerAmount, double Consumption);
     void RequestDeleteUser(const QString& Login);
@@ -55,6 +56,7 @@ signals:
     void OnConsumerGroupsListRequested();
     void OnConsumptionDataForGroupAndDateRequested(int GroupId, QDate Date);
     void OnForecastDataForDateAndHourRequested(QDate Date, int Hour);
+    void OnGenerateForecastForDateAndHourRequested(QDate Date, int Hour);
     void OnUpdateConsumerGroupAmountRequested(const QString& GroupName, int Amount);
     void OnUpdateConsumptionEntryRequested(int GroupId, QDate Date, int Hour, int ConsumerAmount, double Consumption);
     void OnDeleteUserRequested(const QString& Login);

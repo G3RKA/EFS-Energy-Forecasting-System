@@ -31,6 +31,7 @@ public slots:
     void GetAllConsumerGroups();
     void GetConsumptionDataForGroupAndDate(int GroupId, QDate Date);
     void GetForecastDataForDateAndHour(QDate Date, int Hour);
+    void GenerateForecastForDateAndHour(QDate Date, int Hour);
     void OnConnectRequested();
     void OnTrySettingsAnonymous();
     void OnTrySettingsWithUser();

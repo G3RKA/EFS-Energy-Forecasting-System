@@ -27,7 +27,6 @@ private slots:
     void on_TurnOffButton_clicked();
     void FillForecastTable(const QVector<ConsumerGroupConsumptionRow>& Rows);
     void OnRemainingTimeToNextFullHour(qint64 remainingMs);
-    void OnForecastFullHourReached();
 
 private:
     void RefreshForecastStatusLabel();

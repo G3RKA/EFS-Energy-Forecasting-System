@@ -30,6 +30,7 @@ void ForecastWorker::StartHourBoundaryScheduler()
         connect(m_HourTimer, &QTimer::timeout, this, &ForecastWorker::OnFullHourTimeout);
     }
 
+    emit FullHourReached();
     ScheduleNextFullHour();
     OnSecondTick();
     m_TickTimer->start();
@@ -82,7 +83,8 @@ void ForecastWorker::OnFullHourTimeout()
 
     const int H = T.hour();
 
-    emit FullHourReached();
+    
     qDebug() << "Достигнут час" << H;
+    emit FullHourReached();
     ScheduleNextFullHour();
 }

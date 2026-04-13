@@ -1,11 +1,14 @@
 #include "ForecastManager.h"
 
 #include "AppConfig.h"
+#include "DataManager.h"
 #include "Worker/ForecastWorker.h"
 
 #include <QCoreApplication>
+#include <QDate>
 #include <QMetaObject>
 #include <QThread>
+#include <QTime>
 
 QString ForecastManager::FormatRemainingTime(qint64 remainingMs)
 {
@@ -67,6 +70,9 @@ void ForecastManager::StartWorker()
 
     connect(m_Thread, &QThread::started, m_Worker, &ForecastWorker::StartHourBoundaryScheduler);
     connect(m_Worker, &ForecastWorker::FullHourReached, this, &ForecastManager::FullHourReached);
+    connect(m_Worker, &ForecastWorker::FullHourReached, this, []() {
+        DataManager::instance().RequestGenerateForecastForDateAndHour(QDate::currentDate(), QTime::currentTime().hour());
+    });
     connect(m_Worker, &ForecastWorker::RemainingTimeToNextFullHour, this,
             &ForecastManager::RemainingTimeToNextFullHour);
 

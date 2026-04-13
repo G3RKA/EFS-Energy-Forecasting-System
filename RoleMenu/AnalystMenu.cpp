@@ -31,8 +31,6 @@ AnalystMenu::AnalystMenu(const QString& AnalystLogin, QWidget *Parent)
     connect(&DataManager::instance(), &DataManager::ForecastRowsLoaded, this, &AnalystMenu::FillForecastTable);
     connect(&ForecastManager::instance(), &ForecastManager::RemainingTimeToNextFullHour, this,
             &AnalystMenu::OnRemainingTimeToNextFullHour);
-    connect(&ForecastManager::instance(), &ForecastManager::FullHourReached, this,
-            &AnalystMenu::OnForecastFullHourReached);
 
     DataManager::instance().RequestForecastDataForDateAndHour(QDate::currentDate(), QTime::currentTime().hour());
 }
@@ -76,11 +74,6 @@ void AnalystMenu::OnRemainingTimeToNextFullHour(qint64 remainingMs)
     ui->TimeRemLabel->setText(ForecastManager::FormatRemainingTime(remainingMs));
 }
 
-void AnalystMenu::OnForecastFullHourReached()
-{
-    DataManager::instance().RequestForecastDataForDateAndHour(QDate::currentDate(), QTime::currentTime().hour());
-}
-
 void AnalystMenu::FillForecastTable(const QVector<ConsumerGroupConsumptionRow>& Rows)
 {
     const QSignalBlocker Blocker(ui->EnergyTable);
@@ -99,7 +92,14 @@ void AnalystMenu::FillForecastTable(const QVector<ConsumerGroupConsumptionRow>& 
         ui->EnergyTable->insertRow(R);
         ui->EnergyTable->setItem(R, 0, MakeCell(Row.ConsumerGroup));
         ui->EnergyTable->setItem(R, 1, MakeCell(QString::number(Row.ConsumerCount)));
-        ui->EnergyTable->setItem(R, 2, MakeCell(Loc.toString(Row.Consumption, 'f', 2)));
+        if (Row.Consumption >= 0.0)
+        {
+            ui->EnergyTable->setItem(R, 2, MakeCell(Loc.toString(Row.Consumption, 'f', 2)));
+        }
+        else 
+        {
+            ui->EnergyTable->setItem(R, 2, MakeCell("Нет данных"));
+        }
     }
 }
 
