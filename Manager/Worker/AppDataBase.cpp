@@ -1,6 +1,8 @@
 #include "AppDataBase.h"
 
+#include <QDate>
 #include <QDateTime>
+#include <QHash>
 #include <QMetaObject>
 #include <QSettings>
 #include <QSqlDatabase>
@@ -38,7 +40,7 @@ void AppDataBase::GetAllUsers()
     }
 
     QSqlQuery Query(Database);
-    Query.prepare(QString("SELECT Login, Name, Role, LastVisit FROM %1 ORDER BY Login")
+    Query.prepare(QString("SELECT `Login`, `Name`, `Role`, `LastVisit` FROM `%1` ORDER BY `Login`")
                       .arg(AppConfig::DatabaseUsersTable));
 
     if (!Query.exec()) {
@@ -64,12 +66,11 @@ void AppDataBase::GetAllConsumerGroups()
     QVector<ConsumerGroupRow> Rows;
     QSqlDatabase Database;
     if (!GetOpenDatabase(Database)) {
-        emit ConsumerGroupsLoaded(Rows);
         return;
     }
 
     QSqlQuery Query(Database);
-    Query.prepare(QString("SELECT Name, Amount FROM %1 ORDER BY Name")
+    Query.prepare(QString("SELECT `GroupID`, `Name`, `Amount` FROM `%1` ORDER BY `Name`")
                       .arg(AppConfig::DatabaseGroupTable));
 
     if (!Query.exec()) {
@@ -79,11 +80,89 @@ void AppDataBase::GetAllConsumerGroups()
 
     while (Query.next()) {
         ConsumerGroupRow Row;
-        Row.Name = Query.value(0).toString();
-        Row.Amount = Query.value(1).toInt();
+        Row.GroupID = Query.value(0).toInt();
+        Row.Name = Query.value(1).toString();
+        Row.Amount = Query.value(2).toInt();
         Rows.append(std::move(Row));
     }
     emit ConsumerGroupsLoaded(Rows);
+}
+
+void AppDataBase::GetConsumptionDataForGroupAndDate(int GroupId, QDate Date)
+{
+    QVector<ConsumerGroupConsumptionRow> Rows;
+    QSqlDatabase Database;
+    if (!GetOpenDatabase(Database)) {
+        return;
+    }
+
+    QSqlQuery Query(Database);
+    Query.prepare(QString(
+        "SELECT g.`Name`, d.`Date`, d.`Hour`, d.`ConsumerAmount`, d.`Consuption` "
+        "FROM `%1` AS `d` "
+        "INNER JOIN `%2` AS `g` ON d.`GroupID` = g.`GroupID` "
+        "WHERE d.`GroupID` = :groupId AND d.`Date` = :date "
+        "ORDER BY d.`Hour`")
+                      .arg(AppConfig::DatabaseConsumptionTable, AppConfig::DatabaseGroupTable));
+    Query.bindValue(":groupId", GroupId);
+    Query.bindValue(":date", Date);
+
+    if (!Query.exec()) {
+        qDebug() << "DataBase: не удалось загрузить потребление:" << Query.lastError().text();
+        return;
+    }
+
+    while (Query.next()) {
+        ConsumerGroupConsumptionRow Row;
+        Row.ConsumerGroup = Query.value(0).toString();
+        Row.Date = Query.value(1).toDate();
+        Row.Hour = Query.value(2).toInt();
+        Row.ConsumerCount = Query.value(3).toInt();
+        Row.Consumption = Query.value(4).toDouble();
+        Rows.append(std::move(Row));
+    }
+    emit ConsumptionRowsLoaded(Rows);
+}
+
+void AppDataBase::GetForecastDataForDateAndHour(QDate Date, int Hour)
+{
+    QVector<ConsumerGroupConsumptionRow> Rows;
+    if (!Date.isValid() || Hour < 0 || Hour > 23) {
+        emit ForecastRowsLoaded(Rows);
+        return;
+    }
+
+    QSqlDatabase Database;
+    if (!GetOpenDatabase(Database)) {
+        return;
+    }
+
+    QSqlQuery Query(Database);
+    Query.prepare(QString(
+        "SELECT g.`Name`, d.`Date`, d.`Hour`, d.`ConsumerAmount`, d.`Consuption` "
+        "FROM `%1` AS `d` "
+        "INNER JOIN `%2` AS `g` ON d.`GroupID` = g.`GroupID` "
+        "WHERE d.`Date` = :date AND d.`Hour` = :hour "
+        "ORDER BY g.`Name`")
+                      .arg(AppConfig::DatabaseForecastTable, AppConfig::DatabaseGroupTable));
+    Query.bindValue(":date", Date);
+    Query.bindValue(":hour", Hour);
+
+    if (!Query.exec()) {
+        qDebug() << "DataBase: не удалось загрузить прогноз:" << Query.lastError().text();
+        return;
+    }
+
+    while (Query.next()) {
+        ConsumerGroupConsumptionRow Row;
+        Row.ConsumerGroup = Query.value(0).toString();
+        Row.Date = Query.value(1).toDate();
+        Row.Hour = Query.value(2).toInt();
+        Row.ConsumerCount = Query.value(3).toInt();
+        Row.Consumption = Query.value(4).toDouble();
+        Rows.append(std::move(Row));
+    }
+    emit ForecastRowsLoaded(Rows);
 }
 
 void AppDataBase::OnUpdateConsumerGroupAmountRequested(const QString& GroupName, int Amount)
@@ -98,7 +177,7 @@ void AppDataBase::OnUpdateConsumerGroupAmountRequested(const QString& GroupName,
     }
 
     QSqlQuery Query(Database);
-    Query.prepare(QString("UPDATE %1 SET Amount = :amount WHERE Name = :name")
+    Query.prepare(QString("UPDATE `%1` SET `Amount` = :amount WHERE `Name` = :name")
                       .arg(AppConfig::DatabaseGroupTable));
     Query.bindValue(":amount", Amount);
     Query.bindValue(":name", GroupName);
@@ -109,13 +188,41 @@ void AppDataBase::OnUpdateConsumerGroupAmountRequested(const QString& GroupName,
     }
 }
 
+void AppDataBase::OnUpdateConsumptionEntryRequested(int GroupId, QDate Date, int Hour, int ConsumerAmount,
+                                                    double Consumption)
+{
+    if (GroupId <= 0 || !Date.isValid() || ConsumerAmount <= 0 || Consumption <= 0) {
+        return;
+    }
+
+    QSqlDatabase Database;
+    if (!GetOpenDatabase(Database)) {
+        return;
+    }
+
+    QSqlQuery Query(Database);
+    Query.prepare(QString("UPDATE `%1` SET `ConsumerAmount` = :ca, `Consuption` = :cs "
+                          "WHERE `GroupID` = :gid AND `Date` = :d AND `Hour` = :h")
+                      .arg(AppConfig::DatabaseConsumptionTable));
+    Query.bindValue(":ca", ConsumerAmount);
+    Query.bindValue(":cs", Consumption);
+    Query.bindValue(":gid", GroupId);
+    Query.bindValue(":d", Date);
+    Query.bindValue(":h", Hour);
+
+    if (!Query.exec()) {
+        qDebug() << "DataBase: не удалось обновить запись потребления:" << Query.lastError().text();
+        return;
+    }
+}
+
 void AppDataBase::OnDeleteUserRequested(const QString& Login)
 {
     bool Ok = false;
     QSqlDatabase Database;
     if (GetOpenDatabase(Database)) {
         QSqlQuery Query(Database);
-        Query.prepare(QString("DELETE FROM %1 WHERE Login = :login").arg(AppConfig::DatabaseUsersTable));
+        Query.prepare(QString("DELETE FROM `%1` WHERE `Login` = :login").arg(AppConfig::DatabaseUsersTable));
         Query.bindValue(":login", Login);
         if (Query.exec()) {
             Ok = true;
@@ -133,11 +240,11 @@ void AppDataBase::OnUpdateUserRequested(const QString& Login, const QString& Nam
     if (GetOpenDatabase(Database)) {
         QSqlQuery Query(Database);
         if (Password.isEmpty()) {
-            Query.prepare(QString("UPDATE %1 SET Name = :name WHERE Login = :login").arg(AppConfig::DatabaseUsersTable));
+            Query.prepare(QString("UPDATE `%1` SET `Name` = :name WHERE `Login` = :login").arg(AppConfig::DatabaseUsersTable));
             Query.bindValue(":name", Name);
             Query.bindValue(":login", Login);
         } else {
-            Query.prepare(QString("UPDATE %1 SET Name = :name, Password = :password WHERE Login = :login")
+            Query.prepare(QString("UPDATE `%1` SET `Name` = :name, `Password` = :password WHERE `Login` = :login")
                               .arg(AppConfig::DatabaseUsersTable));
             Query.bindValue(":name", Name);
             Query.bindValue(":password", Password);
@@ -161,7 +268,7 @@ void AppDataBase::OnLoginVerifyRequested(const QString& Login, const QString& Pa
     }
 
     QSqlQuery Query(Database);
-    Query.prepare(QString("SELECT Role, Password, Name FROM %1 WHERE Login = :login")
+    Query.prepare(QString("SELECT `Role`, `Password`, `Name` FROM `%1` WHERE `Login` = :login")
                       .arg(AppConfig::DatabaseUsersTable));
     Query.bindValue(":login", Login);
     if (!Query.exec()) {
@@ -190,10 +297,16 @@ void AppDataBase::OnLoginVerifyRequested(const QString& Login, const QString& Pa
     emit LoginVerifyFinished(true, DbRole, DisplayName, false);
 }
 
-void AppDataBase::OnEnsureGroupsFromCSV(const QStringList& GroupNames)
+void AppDataBase::OnConsumeCSVImport(const QStringList& GroupNames, const QVector<ConsumerGroupConsumptionRow>& Rows)
 {
     QSqlDatabase Database;
     if (!GetOpenDatabase(Database)) {
+        return;
+    }
+
+    if (!Database.transaction()) {
+        qDebug() << "DataBase: не удалось начать транзакцию:" << Database.lastError().text();
+        emit CSVConsumptionImportFinished(false, "0");
         return;
     }
 
@@ -203,11 +316,13 @@ void AppDataBase::OnEnsureGroupsFromCSV(const QStringList& GroupNames)
         }
 
         QSqlQuery ExistsQuery(Database);
-        ExistsQuery.prepare(QString("SELECT 1 FROM %1 WHERE `Name` = :name LIMIT 1")
+        ExistsQuery.prepare(QString("SELECT 1 FROM `%1` WHERE `Name` = :name LIMIT 1")
                                 .arg(AppConfig::DatabaseGroupTable));
         ExistsQuery.bindValue(":name", GroupName);
         if (!ExistsQuery.exec()) {
             qDebug() << "DataBase: не удалось проверить группу:" << ExistsQuery.lastError().text();
+            Database.rollback();
+            emit CSVConsumptionImportFinished(false, "0");
             return;
         }
         if (ExistsQuery.next()) {
@@ -215,16 +330,85 @@ void AppDataBase::OnEnsureGroupsFromCSV(const QStringList& GroupNames)
         }
 
         QSqlQuery InsertQuery(Database);
-        InsertQuery.prepare(QString("INSERT INTO %1 (`Name`) VALUES (:name)")
+        InsertQuery.prepare(QString("INSERT INTO `%1` (`Name`) VALUES (:name)")
                                  .arg(AppConfig::DatabaseGroupTable));
         InsertQuery.bindValue(":name", GroupName);
         if (!InsertQuery.exec()) {
             qDebug() << "DataBase: не удалось добавить группу:" << InsertQuery.lastError().text();
+            Database.rollback();
+            emit CSVConsumptionImportFinished(false, "0");
             return;
         }
     }
 
-    emit CSVGroupsPersistFinished(true, QString());
+    QHash<QString, int> GroupIdByName;
+    GroupIdByName.reserve(GroupNames.size() + 8);
+    for (const QString& GroupName : GroupNames) {
+        if (GroupName.isEmpty()) {
+            continue;
+        }
+        QSqlQuery IdQuery(Database);
+        IdQuery.prepare(QString("SELECT `GroupID` FROM `%1` WHERE `Name` = :name LIMIT 1")
+                            .arg(AppConfig::DatabaseGroupTable));
+        IdQuery.bindValue(":name", GroupName);
+        if (!IdQuery.exec() || !IdQuery.next()) {
+            qDebug() << "DataBase: не удалось получить GroupID для" << GroupName;
+            Database.rollback();
+            emit CSVConsumptionImportFinished(false, "0");
+            return;
+        }
+        GroupIdByName.insert(GroupName, IdQuery.value(0).toInt());
+    }
+
+    QSqlQuery Del(Database);
+    Del.prepare(QString("DELETE FROM `%1` WHERE `GroupID` = :gid AND `Date` = :d AND `Hour` = :h")
+                    .arg(AppConfig::DatabaseConsumptionTable));
+
+    QSqlQuery Ins(Database);
+    Ins.prepare(QString("INSERT INTO `%1` (`GroupID`, `Date`, `Hour`, `ConsumerAmount`, `Consuption`) "
+                        "VALUES (:gid, :d, :h, :ca, :cs)")
+                    .arg(AppConfig::DatabaseConsumptionTable));
+
+    for (const ConsumerGroupConsumptionRow& Row : Rows) {
+        const auto It = GroupIdByName.constFind(Row.ConsumerGroup);
+        if (It == GroupIdByName.cend()) {
+            Database.rollback();
+            emit CSVConsumptionImportFinished(false, QStringLiteral("0"));
+            return;
+        }
+        const int GroupId = It.value();
+
+        Del.bindValue(":gid", GroupId);
+        Del.bindValue(":d", Row.Date);
+        Del.bindValue(":h", Row.Hour);
+        if (!Del.exec()) {
+            qDebug() << "DataBase: DELETE при импорте CSV:" << Del.lastError().text();
+            Database.rollback();
+            emit CSVConsumptionImportFinished(false, QStringLiteral("0"));
+            return;
+        }
+
+        Ins.bindValue(":gid", GroupId);
+        Ins.bindValue(":d", Row.Date);
+        Ins.bindValue(":h", Row.Hour);
+        Ins.bindValue(":ca", Row.ConsumerCount);
+        Ins.bindValue(":cs", Row.Consumption);
+        if (!Ins.exec()) {
+            qDebug() << "DataBase: INSERT при импорте CSV:" << Ins.lastError().text();
+            Database.rollback();
+            emit CSVConsumptionImportFinished(false, "0");
+            return;
+        }
+    }
+
+    if (!Database.commit()) {
+        qDebug() << "DataBase: commit импорта CSV:" << Database.lastError().text();
+        Database.rollback();
+        emit CSVConsumptionImportFinished(false, "0");
+        return;
+    }
+
+    emit CSVConsumptionImportFinished(true, QString());
 }
 
 void AppDataBase::OnCreateUserRequested(const QString& Login, const QString& Name, const QString& Role,
@@ -236,7 +420,7 @@ void AppDataBase::OnCreateUserRequested(const QString& Login, const QString& Nam
     }
 
     QSqlQuery TakenQuery(Database);
-    TakenQuery.prepare(QString("SELECT 1 FROM %1 WHERE Login = :login").arg(AppConfig::DatabaseUsersTable));
+    TakenQuery.prepare(QString("SELECT 1 FROM `%1` WHERE `Login` = :login").arg(AppConfig::DatabaseUsersTable));
     TakenQuery.bindValue(":login", Login);
     if (!TakenQuery.exec()) {
         qDebug() << "DataBase: не удалось проверить уникальность логина:" << TakenQuery.lastError().text();
@@ -254,7 +438,7 @@ void AppDataBase::OnCreateUserRequested(const QString& Login, const QString& Nam
     }
 
     QSqlQuery Insert(Database);
-    Insert.prepare(QString("INSERT INTO %1 (Login, Name, Role, Password) VALUES (:login, :name, :role, :password)")
+    Insert.prepare(QString("INSERT INTO `%1` (`Login`, `Name`, `Role`, `Password`) VALUES (:login, :name, :role, :password)")
                        .arg(AppConfig::DatabaseUsersTable));
     Insert.bindValue(":login", Login);
     Insert.bindValue(":name", Name);
@@ -366,7 +550,7 @@ bool AppDataBase::UpdateLastVisitForLogin(const QString& Login)
     }
 
     QSqlQuery Query(Database);
-    Query.prepare(QString("UPDATE %1 SET LastVisit = :lastVisit WHERE Login = :login")
+    Query.prepare(QString("UPDATE `%1` SET `LastVisit` = :lastVisit WHERE `Login` = :login")
                       .arg(AppConfig::DatabaseUsersTable));
     const QDateTime LocalNow = QDateTime::currentDateTime();
     Query.bindValue(":lastVisit", LocalNow.toString("yyyy-MM-dd HH:mm:ss"));

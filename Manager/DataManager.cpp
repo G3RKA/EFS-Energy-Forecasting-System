@@ -50,14 +50,17 @@ void DataManager::Init()
     connect(m_Worker, &AppDataBase::SettingsUserResult, this, &DataManager::SettingsUserResult);
     connect(m_Worker, &AppDataBase::UsersListLoaded, this, &DataManager::UsersListLoaded);
     connect(m_Worker, &AppDataBase::ConsumerGroupsLoaded, this, &DataManager::ConsumerGroupsLoaded);
+    connect(m_Worker, &AppDataBase::ConsumptionRowsLoaded, this, &DataManager::ConsumptionRowsLoaded);
+    connect(m_Worker, &AppDataBase::ForecastRowsLoaded, this, &DataManager::ForecastRowsLoaded);
     connect(m_Worker, &AppDataBase::UserDeleteFinished, this, &DataManager::UserDeleteFinished);
     connect(m_Worker, &AppDataBase::UserUpdateFinished, this, &DataManager::UserUpdateFinished);
     connect(m_Worker, &AppDataBase::UserCreateFinished, this, &DataManager::UserCreateFinished);
     connect(m_Worker, &AppDataBase::LoginVerifyFinished, this, &DataManager::LoginVerifyFinished);
     connect(m_CsvWorker, &CSVWorker::CSVProcessingFinished, this, &DataManager::CSVProcessingFinished);
-    
+    connect(m_Worker, &AppDataBase::CSVConsumptionImportFinished, this, &DataManager::CSVProcessingFinished);
+
     // Worker -> Worker
-    connect(m_CsvWorker, &CSVWorker::CSVGroupsToEnsure, m_Worker, &AppDataBase::OnEnsureGroupsFromCSV);
+    connect(m_CsvWorker, &CSVWorker::CSVParsedForImport, m_Worker, &AppDataBase::OnConsumeCSVImport);
 
     // Manager -> Worker
     connect(this, &DataManager::OnConnectToDataBase, m_Worker, &AppDataBase::OnConnectRequested);
@@ -66,7 +69,11 @@ void DataManager::Init()
     connect(this, &DataManager::OnTrySettingsWithUserRequested, m_Worker, &AppDataBase::OnTrySettingsWithUser);
     connect(this, &DataManager::OnUsersListRequested, m_Worker, &AppDataBase::GetAllUsers);
     connect(this, &DataManager::OnConsumerGroupsListRequested, m_Worker, &AppDataBase::GetAllConsumerGroups);
+    connect(this, &DataManager::OnConsumptionDataForGroupAndDateRequested, m_Worker,
+            &AppDataBase::GetConsumptionDataForGroupAndDate);
+    connect(this, &DataManager::OnForecastDataForDateAndHourRequested, m_Worker, &AppDataBase::GetForecastDataForDateAndHour);
     connect(this, &DataManager::OnUpdateConsumerGroupAmountRequested, m_Worker, &AppDataBase::OnUpdateConsumerGroupAmountRequested);
+    connect(this, &DataManager::OnUpdateConsumptionEntryRequested, m_Worker, &AppDataBase::OnUpdateConsumptionEntryRequested);
     connect(this, &DataManager::OnDeleteUserRequested, m_Worker, &AppDataBase::OnDeleteUserRequested);
     connect(this, &DataManager::OnUpdateUserRequested, m_Worker, &AppDataBase::OnUpdateUserRequested);
     connect(this, &DataManager::OnCreateUserRequested, m_Worker, &AppDataBase::OnCreateUserRequested);
@@ -106,9 +113,25 @@ void DataManager::RequestConsumerGroupsList()
     emit OnConsumerGroupsListRequested();
 }
 
+void DataManager::RequestConsumptionDataForGroupAndDate(int GroupId, const QDate& Date)
+{
+    emit OnConsumptionDataForGroupAndDateRequested(GroupId, Date);
+}
+
+void DataManager::RequestForecastDataForDateAndHour(const QDate& Date, int Hour)
+{
+    emit OnForecastDataForDateAndHourRequested(Date, Hour);
+}
+
 void DataManager::RequestUpdateConsumerGroupAmount(const QString& GroupName, int Amount)
 {
     emit OnUpdateConsumerGroupAmountRequested(GroupName, Amount);
+}
+
+void DataManager::RequestUpdateConsumptionEntry(int GroupId, const QDate& Date, int Hour, int ConsumerAmount,
+                                                double Consumption)
+{
+    emit OnUpdateConsumptionEntryRequested(GroupId, Date, Hour, ConsumerAmount, Consumption);
 }
 
 void DataManager::RequestDeleteUser(const QString& Login)

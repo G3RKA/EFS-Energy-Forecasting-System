@@ -4,6 +4,9 @@
 #include <QObject>
 #include <QString>
 #include <QStringList>
+#include <QVector>
+
+#include "DataTypes/ConsumerGroupConsumptionRow.h"
 
 class CSVWorker : public QObject
 {
@@ -16,7 +19,7 @@ public slots:
 
 signals:
     void CSVProcessingFinished(bool Success, const QString& Message);
-    void CSVGroupsToEnsure(const QStringList& GroupNames);
+    void CSVParsedForImport(const QStringList& GroupNames, const QVector<ConsumerGroupConsumptionRow>& Rows);
 
 private:
     QStringList SplitCSVLine(const QString& Line);

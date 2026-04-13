@@ -22,6 +22,7 @@ public:
     static const QString DatabaseLogsTable;
     static const QString DatabaseGroupTable;
     static const QString DatabaseConsumptionTable;
+    static const QString DatabaseForecastTable;
 
     static bool IsSuperAdmin(const QString& Login);
     static bool CheckSAPassword(const QString& Login, const QString& Password);

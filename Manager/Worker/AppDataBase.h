@@ -8,7 +8,10 @@
 #include <qobject.h>
 
 #include "DataTypes/AccountUserRow.h"
+#include "DataTypes/ConsumerGroupConsumptionRow.h"
 #include "DataTypes/ConsumerGroupRow.h"
+
+#include <QDate>
 
 class QSqlDatabase;
 
@@ -23,6 +26,8 @@ public:
 public slots:
     void GetAllUsers();
     void GetAllConsumerGroups();
+    void GetConsumptionDataForGroupAndDate(int GroupId, QDate Date);
+    void GetForecastDataForDateAndHour(QDate Date, int Hour);
     void OnConnectRequested();
     void OnTrySettingsAnonymous();
     void OnTrySettingsWithUser();
@@ -31,9 +36,10 @@ public slots:
     void OnCreateUserRequested(const QString& Login, const QString& Name, const QString& Role, const QString& PasswordHash);
     void OnLoginVerifyRequested(const QString& Login, const QString& Password);
     void OnUpdateConsumerGroupAmountRequested(const QString& GroupName, int Amount);
+    void OnUpdateConsumptionEntryRequested(int GroupId, QDate Date, int Hour, int ConsumerAmount, double Consumption);
 
     // From Worker CSV
-    void OnEnsureGroupsFromCSV(const QStringList& GroupNames);
+    void OnConsumeCSVImport(const QStringList& GroupNames, const QVector<ConsumerGroupConsumptionRow>& Rows);
 
 signals:
     void OnDataBaseStateSended(bool Connected);
@@ -42,12 +48,14 @@ signals:
     void SettingsUserResult(bool Success, bool UnknownDatabase, bool BadCredentials, const QString& UnknownDbMessage);
     void UsersListLoaded(const QVector<AccountUserRow>& Users);
     void ConsumerGroupsLoaded(const QVector<ConsumerGroupRow>& Groups);
+    void ConsumptionRowsLoaded(const QVector<ConsumerGroupConsumptionRow>& Rows);
+    void ForecastRowsLoaded(const QVector<ConsumerGroupConsumptionRow>& Rows);
     void UserDeleteFinished(bool Success, const QString& Login);
     void UserUpdateFinished(bool Success, const QString& Login, const QString& Name);
     void UserCreateFinished(bool Success, const QString& Login, bool DuplicateLogin);
     void LoginVerifyFinished(bool Success, const QString& DbRole, const QString& DisplayName, bool InvalidCredentials);
     
-    void CSVGroupsPersistFinished(bool Success, const QString& Message);
+    void CSVConsumptionImportFinished(bool Success, const QString& Message);
 
 private:
     bool IternalConnectToDatabase();

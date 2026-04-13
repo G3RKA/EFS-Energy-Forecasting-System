@@ -1,10 +1,11 @@
 #ifndef DATAMANAGER_H
 #define DATAMANAGER_H
 
-#include <QObject>
+#include <QDate>
 #include <QVector>
 
 #include "DataTypes/AccountUserRow.h"
+#include "DataTypes/ConsumerGroupConsumptionRow.h"
 #include "DataTypes/ConsumerGroupRow.h"
 
 class QThread;
@@ -24,7 +25,10 @@ public:
     void RequestTrySettingsWithUser();
     void RequestUsersList();
     void RequestConsumerGroupsList();
+    void RequestConsumptionDataForGroupAndDate(int GroupId, const QDate& Date);
+    void RequestForecastDataForDateAndHour(const QDate& Date, int Hour);
     void RequestUpdateConsumerGroupAmount(const QString& GroupName, int Amount);
+    void RequestUpdateConsumptionEntry(int GroupId, const QDate& Date, int Hour, int ConsumerAmount, double Consumption);
     void RequestDeleteUser(const QString& Login);
     void RequestUpdateUser(const QString& Login, const QString& Name, const QString& Password);
     void RequestCreateUser(const QString& Login, const QString& Name, const QString& Role, const QString& PasswordHash);
@@ -44,7 +48,10 @@ signals:
     void OnTrySettingsWithUserRequested();
     void OnUsersListRequested();
     void OnConsumerGroupsListRequested();
+    void OnConsumptionDataForGroupAndDateRequested(int GroupId, QDate Date);
+    void OnForecastDataForDateAndHourRequested(QDate Date, int Hour);
     void OnUpdateConsumerGroupAmountRequested(const QString& GroupName, int Amount);
+    void OnUpdateConsumptionEntryRequested(int GroupId, QDate Date, int Hour, int ConsumerAmount, double Consumption);
     void OnDeleteUserRequested(const QString& Login);
     void OnUpdateUserRequested(const QString& Login, const QString& Name, const QString& Password);
     void OnCreateUserRequested(const QString& Login, const QString& Name, const QString& Role, const QString& PasswordHash);
@@ -58,6 +65,8 @@ signals:
     void SettingsUserResult(bool Success, bool UnknownDatabase, bool BadCredentials, const QString& UnknownDbMessage);
     void UsersListLoaded(const QVector<AccountUserRow>& Users);
     void ConsumerGroupsLoaded(const QVector<ConsumerGroupRow>& Groups);
+    void ConsumptionRowsLoaded(const QVector<ConsumerGroupConsumptionRow>& Rows);
+    void ForecastRowsLoaded(const QVector<ConsumerGroupConsumptionRow>& Rows);
     void UserDeleteFinished(bool Success, const QString& Login);
     void UserUpdateFinished(bool Success, const QString& Login, const QString& Name);
     void UserCreateFinished(bool Success, const QString& Login, bool DuplicateLogin);

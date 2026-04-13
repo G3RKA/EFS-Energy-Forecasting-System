@@ -6,6 +6,7 @@
 #include "DataTypes/ConsumerGroupTotalsRow.h"
 #include "Manager/DataManager.h"
 
+#include <QDate>
 #include <QFontDatabase>
 #include <QDebug>
 #include <QApplication>
@@ -40,6 +41,7 @@ int main(int argc, char *argv[])
     qRegisterMetaType<QVector<ConsumerGroupConsumptionRow>>("QVector<ConsumerGroupConsumptionRow>");
     qRegisterMetaType<QVector<ConsumerGroupRow>>("QVector<ConsumerGroupRow>");
     qRegisterMetaType<QVector<ConsumerGroupTotalsRow>>("QVector<ConsumerGroupTotalsRow>");
+    qRegisterMetaType<QDate>("QDate");
 
     DataManager::instance().Init();
     MainWindow W;

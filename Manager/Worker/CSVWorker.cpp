@@ -6,6 +6,7 @@
 #include <QIODevice>
 #include <QSet>
 #include <QTextStream>
+#include <QVector>
 
 CSVWorker::CSVWorker(QObject *Parent)
     : QObject{Parent}
@@ -51,6 +52,7 @@ void CSVWorker::OnProcessCSVRequested(const QString& FilePath)
     }
 
     QSet<QString> UniqueGroups;
+    QVector<ConsumerGroupConsumptionRow> ImportRows;
 
     while (!In.atEnd()) {
         WorkLine = In.readLine();
@@ -77,6 +79,14 @@ void CSVWorker::OnProcessCSVRequested(const QString& FilePath)
         }
 
         UniqueGroups.insert(RowCells.at(0));
+
+        ConsumerGroupConsumptionRow Row;
+        Row.ConsumerGroup = RowCells.at(0);
+        Row.Date = QDate::fromString(RowCells.at(1), QStringLiteral("dd.MM.yyyy"));
+        Row.Hour = RowCells.at(2).toInt();
+        Row.ConsumerCount = RowCells.at(3).toInt();
+        Row.Consumption = RowCells.at(4).toDouble();
+        ImportRows.append(std::move(Row));
     }
 
     QStringList GroupNames;
@@ -85,9 +95,7 @@ void CSVWorker::OnProcessCSVRequested(const QString& FilePath)
         GroupNames.append(G);
     }
 
-    emit CSVGroupsToEnsure(GroupNames);
-
-    emit CSVProcessingFinished(true, QString());
+    emit CSVParsedForImport(GroupNames, ImportRows);
 }
 
 QStringList CSVWorker::SplitCSVLine(const QString& Line)

@@ -5,6 +5,7 @@
 #include <QString>
 
 struct ConsumerGroupRow {
+    int GroupID = 0;
     QString Name;
     int Amount = 0;
 };

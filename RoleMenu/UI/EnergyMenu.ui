@@ -158,6 +158,12 @@
      </item>
      <item>
       <widget class="QFrame" name="SummaryInfo">
+       <property name="font">
+        <font>
+         <family>Merriweather</family>
+         <pointsize>14</pointsize>
+        </font>
+       </property>
        <property name="frameShape">
         <enum>QFrame::Shape::Box</enum>
        </property>
@@ -167,8 +173,11 @@
        <property name="lineWidth">
         <number>2</number>
        </property>
-       <layout class="QVBoxLayout" name="verticalLayout_2">
-        <item alignment="Qt::AlignmentFlag::AlignHCenter">
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <property name="spacing">
+         <number>0</number>
+        </property>
+        <item alignment="Qt::AlignmentFlag::AlignRight">
          <widget class="QLabel" name="SummaryLabel">
           <property name="font">
            <font>
@@ -177,7 +186,20 @@
            </font>
           </property>
           <property name="text">
-           <string>Потребление: XXX</string>
+           <string>Потребление: </string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label">
+          <property name="font">
+           <font>
+            <family>Merriweather</family>
+            <pointsize>14</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>XXX</string>
           </property>
          </widget>
         </item>

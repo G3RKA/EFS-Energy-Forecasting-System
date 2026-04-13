@@ -30,6 +30,7 @@ set(PROJECT_HEADERS
     ${MANAGER}/Worker/AppDataBase.h
     ${MANAGER}/Worker/CSVWorker.h
     ${MANAGER}/DataManager.h
+    ${MANAGER}/ForecastManager.h
     ${MANAGER}/LoginLockout.h
     ${MAINMENU}/MainWindow.h
     ${ROLE}/AdminMenu.h
@@ -76,6 +77,7 @@ set(PROJECT_SOURCES
     ${MANAGER}/Worker/AppDataBase.cpp
     ${MANAGER}/Worker/CSVWorker.cpp
     ${MANAGER}/DataManager.cpp
+    ${MANAGER}/ForecastManager.cpp
     ${MANAGER}/LoginLockout.cpp
     ${MAINMENU}/MainWindow.cpp
     ${ROLE}/AdminMenu.cpp
