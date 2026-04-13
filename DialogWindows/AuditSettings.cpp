@@ -15,32 +15,32 @@ AuditSettings::AuditSettings(QWidget *Parent)
     setWindowFlags(Qt::Dialog | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
 
     QSettings Settings(AppConfig::GetSettingsPath(), QSettings::IniFormat);
-    Settings.beginGroup("Audit");
-        LoadAuditCheckbox(ui->DisableButton, Settings, "AnalystDisableForecast");
-        LoadAuditCheckbox(ui->EnableButton, Settings, "AnalystEnableForecast");
-        LoadAuditCheckbox(ui->UploadButton, Settings, "AnalystUploadData");
-        LoadAuditCheckbox(ui->ChangeButton, Settings, "AnalystChangeData");
-        LoadAuditCheckbox(ui->JoinButton, Settings, "AnalystLoginLogout");
-        LoadAuditCheckbox(ui->JoinButton_2, Settings, "EnergyLoginLogout");
+    Settings.beginGroup(AppConfig::AuditGroup);
+        LoadAuditCheckbox(ui->DisableButton, Settings, AppConfig::AuditKeyAnalystDisableForecast);
+        LoadAuditCheckbox(ui->EnableButton, Settings, AppConfig::AuditKeyAnalystEnableForecast);
+        LoadAuditCheckbox(ui->UploadButton, Settings, AppConfig::AuditKeyAnalystUploadData);
+        LoadAuditCheckbox(ui->ChangeButton, Settings, AppConfig::AuditKeyAnalystChangeData);
+        LoadAuditCheckbox(ui->JoinButton, Settings, AppConfig::AuditKeyAnalystLoginLogout);
+        LoadAuditCheckbox(ui->JoinButton_2, Settings, AppConfig::AuditKeyEnergyLoginLogout);
     Settings.endGroup();
 
     connect(ui->DisableButton, &QCheckBox::toggled, this, [this](bool On) {
-        WriteAuditFlag("AnalystDisableForecast", On);
+        WriteAuditFlag(AppConfig::AuditKeyAnalystDisableForecast, On);
     });
     connect(ui->EnableButton, &QCheckBox::toggled, this, [this](bool On) {
-        WriteAuditFlag("AnalystEnableForecast", On);
+        WriteAuditFlag(AppConfig::AuditKeyAnalystEnableForecast, On);
     });
     connect(ui->UploadButton, &QCheckBox::toggled, this, [this](bool On) {
-        WriteAuditFlag("AnalystUploadData", On);
+        WriteAuditFlag(AppConfig::AuditKeyAnalystUploadData, On);
     });
     connect(ui->ChangeButton, &QCheckBox::toggled, this, [this](bool On) {
-        WriteAuditFlag("AnalystChangeData", On);
+        WriteAuditFlag(AppConfig::AuditKeyAnalystChangeData, On);
     });
     connect(ui->JoinButton, &QCheckBox::toggled, this, [this](bool On) {
-        WriteAuditFlag("AnalystLoginLogout", On);
+        WriteAuditFlag(AppConfig::AuditKeyAnalystLoginLogout, On);
     });
     connect(ui->JoinButton_2, &QCheckBox::toggled, this, [this](bool On) {
-        WriteAuditFlag("EnergyLoginLogout", On);
+        WriteAuditFlag(AppConfig::AuditKeyEnergyLoginLogout, On);
     });
 }
 
@@ -57,7 +57,7 @@ void AuditSettings::on_CloseButton_clicked()
 void AuditSettings::WriteAuditFlag(const QString& Key, bool Checked)
 {
     QSettings Settings(AppConfig::GetSettingsPath(), QSettings::IniFormat);
-    Settings.beginGroup("Audit");
+    Settings.beginGroup(AppConfig::AuditGroup);
         Settings.setValue(Key, Checked ? 1 : 0);
     Settings.endGroup();
     Settings.sync();

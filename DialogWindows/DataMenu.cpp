@@ -1,6 +1,7 @@
 #include "DataMenu.h"
 #include "UI/ui_DataMenu.h"
 
+#include "AppConfig.h"
 #include "DataManager.h"
 #include "UploadError.h"
 
@@ -15,10 +16,12 @@
 #include <QSignalBlocker>
 #include <QTableWidget>
 #include <QTableWidgetItem>
+#include <QtMath>
 
-DataMenu::DataMenu(QWidget *Parent)
+DataMenu::DataMenu(const QString& AnalystLogin, QWidget *Parent)
     : QDialog(Parent)
     , ui(new Ui::DataMenu)
+    , m_AnalystLogin(AnalystLogin)
 {
     ui->setupUi(this);
 
@@ -81,7 +84,7 @@ void DataMenu::on_LoadButton_clicked()
 
     WaitBox->show();
 
-    DataManager::instance().RequestProcessCSV(Path);
+    DataManager::instance().RequestProcessCSV(Path, m_AnalystLogin);
 }
 
 void DataMenu::on_CloseButton_clicked()
@@ -224,12 +227,35 @@ void DataMenu::OnDataTableItemChanged(QTableWidgetItem *Item)
         return;
     }
 
+    const int OldCount = CountItem->data(Qt::UserRole).toInt();
+    const double OldConsumption = ConsItem->data(Qt::UserRole).toDouble();
+    QTableWidgetItem *GroupItem = ui->DataTable->item(Item->row(), 0);
+    const QString GroupName = GroupItem ? GroupItem->text() : ui->ConsumePicker->currentText();
+
     {
         const QSignalBlocker Blocker(ui->DataTable);
         CountItem->setText(QString::number(Count));
         CountItem->setData(Qt::UserRole, Count);
         ConsItem->setText(Loc.toString(Consumption, 'f', 2));
         ConsItem->setData(Qt::UserRole, Consumption);
+    }
+
+    if (AppConfig::IsAuditAnalystChangeDataEnabled() && !m_AnalystLogin.trimmed().isEmpty()) {
+        const QString Login = m_AnalystLogin.trimmed();
+        if (Item->column() == 3 && OldCount != Count) {
+            const QString Msg = QString("Изменение количества потребителей для группы %1 с %2 на %3")
+                                      .arg(GroupName)
+                                      .arg(OldCount)
+                                      .arg(Count);
+            DataManager::instance().RequestAppendAuditLog(Login, Msg);
+        }
+        if (Item->column() == 4 && qAbs(OldConsumption - Consumption) > 1e-9) {
+            const QString Msg = QString("Изменение потребления для группы %1 с %2 на %3")
+                                    .arg(GroupName)
+                                    .arg(Loc.toString(OldConsumption, 'f', 2))
+                                    .arg(Loc.toString(Consumption, 'f', 2));
+            DataManager::instance().RequestAppendAuditLog(Login, Msg);
+        }
     }
 
     DataManager::instance().RequestUpdateConsumptionEntry(GroupId, Date, Hour, Count, Consumption);

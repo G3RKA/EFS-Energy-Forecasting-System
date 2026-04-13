@@ -47,6 +47,7 @@ void MainWindow::BackToAuthMenu()
     DisableLabels();
     ui->PageWidget->setCurrentIndex(0);
     ResetRoleMenu();
+    ClearRoleSession();
 
     LostConnectionDialog LostDialog(this);
     LostDialog.exec();
@@ -75,6 +76,7 @@ void MainWindow::on_LogInButton_clicked()
         if (AppConfig::CheckSAPassword(LoginText, PasswordText))
         {
             LoginLockout::ClearOnSuccessfulLogin();
+            ClearRoleSession();
 
             AdminMenu* Menu = new AdminMenu(this);
             ui->RoleLayout->addWidget(Menu);
@@ -117,14 +119,25 @@ void MainWindow::OnLoginVerifyFinished(bool Success, const QString& DbRole, cons
     const QString UserLabel = DisplayName.trimmed().isEmpty() ? ui->LoginLine->text().trimmed() : DisplayName;
     SetUserName(UserLabel);
 
+    const QString LoginTrimmed = ui->LoginLine->text().trimmed();
+    m_SessionLogin = LoginTrimmed;
+    m_SessionRoleDb = DbRole;
+
     if (DbRole == AppConfig::DatabaseAnalystStr) {
-        AnalystMenu* Menu = new AnalystMenu(this);
+        if (AppConfig::IsAuditAnalystLoginLogoutEnabled()) {
+            DataManager::instance().RequestAppendAuditLog(LoginTrimmed, "Вход в систему");
+        }
+        AnalystMenu* Menu = new AnalystMenu(LoginTrimmed, this);
         ui->RoleLayout->addWidget(Menu);
     } else if (DbRole == AppConfig::DatabaseEnergyStr) {
+        if (AppConfig::IsAuditEnergyLoginLogoutEnabled()) {
+            DataManager::instance().RequestAppendAuditLog(LoginTrimmed, "Вход в систему");
+        }
         EnergyMenu* Menu = new EnergyMenu(this);
         ui->RoleLayout->addWidget(Menu);
     } else {
         ShowCredentialError();
+        ClearRoleSession();
         return;
     }
 
@@ -139,10 +152,31 @@ void MainWindow::on_RecoveryButton_clicked()
 
 void MainWindow::on_LogOutButton_clicked()
 {
+    TryAppendLogoutAudit();
+
     ClearEdits();
     DisableLabels();
     ui->PageWidget->setCurrentIndex(0);
     ResetRoleMenu();
+    ClearRoleSession();
+}
+
+void MainWindow::TryAppendLogoutAudit()
+{
+    if (m_SessionLogin.isEmpty()) {
+        return;
+    }
+    if (m_SessionRoleDb == AppConfig::DatabaseAnalystStr && AppConfig::IsAuditAnalystLoginLogoutEnabled()) {
+        DataManager::instance().RequestAppendAuditLog(m_SessionLogin, QStringLiteral("Выход из системы"));
+    } else if (m_SessionRoleDb == AppConfig::DatabaseEnergyStr && AppConfig::IsAuditEnergyLoginLogoutEnabled()) {
+        DataManager::instance().RequestAppendAuditLog(m_SessionLogin, QStringLiteral("Выход из системы"));
+    }
+}
+
+void MainWindow::ClearRoleSession()
+{
+    m_SessionLogin.clear();
+    m_SessionRoleDb.clear();
 }
 
 void MainWindow::SetUserName(const QString &UName)

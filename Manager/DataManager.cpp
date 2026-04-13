@@ -49,6 +49,8 @@ void DataManager::Init()
     connect(m_Worker, &AppDataBase::SettingsAnonymousResult, this, &DataManager::SettingsAnonymousResult);
     connect(m_Worker, &AppDataBase::SettingsUserResult, this, &DataManager::SettingsUserResult);
     connect(m_Worker, &AppDataBase::UsersListLoaded, this, &DataManager::UsersListLoaded);
+    connect(m_Worker, &AppDataBase::AuditLogAllLoaded, this, &DataManager::AuditLogAllLoaded);
+    connect(m_Worker, &AppDataBase::AuditLogForDayLoaded, this, &DataManager::AuditLogForDayLoaded);
     connect(m_Worker, &AppDataBase::ConsumerGroupsLoaded, this, &DataManager::ConsumerGroupsLoaded);
     connect(m_Worker, &AppDataBase::ConsumptionRowsLoaded, this, &DataManager::ConsumptionRowsLoaded);
     connect(m_Worker, &AppDataBase::ForecastRowsLoaded, this, &DataManager::ForecastRowsLoaded);
@@ -68,6 +70,8 @@ void DataManager::Init()
     connect(this, &DataManager::OnTrySettingsAnonymousRequested, m_Worker, &AppDataBase::OnTrySettingsAnonymous);
     connect(this, &DataManager::OnTrySettingsWithUserRequested, m_Worker, &AppDataBase::OnTrySettingsWithUser);
     connect(this, &DataManager::OnUsersListRequested, m_Worker, &AppDataBase::GetAllUsers);
+    connect(this, &DataManager::OnAuditLogRequested, m_Worker, &AppDataBase::GetAuditLogRows);
+    connect(this, &DataManager::OnAppendAuditLogRequested, m_Worker, &AppDataBase::AppendAuditLogRow);
     connect(this, &DataManager::OnConsumerGroupsListRequested, m_Worker, &AppDataBase::GetAllConsumerGroups);
     connect(this, &DataManager::OnConsumptionDataForGroupAndDateRequested, m_Worker,
             &AppDataBase::GetConsumptionDataForGroupAndDate);
@@ -106,6 +110,16 @@ void DataManager::RequestTrySettingsWithUser()
 void DataManager::RequestUsersList()
 {
     emit OnUsersListRequested();
+}
+
+void DataManager::RequestAuditLog(QDate DayFilter)
+{
+    emit OnAuditLogRequested(DayFilter);
+}
+
+void DataManager::RequestAppendAuditLog(const QString& Login, const QString& Action)
+{
+    emit OnAppendAuditLogRequested(Login, Action);
 }
 
 void DataManager::RequestConsumerGroupsList()
@@ -155,7 +169,7 @@ void DataManager::RequestLoginVerify(const QString& Login, const QString& Passwo
     emit OnLoginVerifyRequested(Login, Password);
 }
 
-void DataManager::RequestProcessCSV(const QString& FilePath)
+void DataManager::RequestProcessCSV(const QString& FilePath, const QString& AnalystLogin)
 {
-    emit OnProcessCSVRequested(FilePath);
+    emit OnProcessCSVRequested(FilePath, AnalystLogin);
 }

@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QString>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -35,6 +36,11 @@ private:
     void DisableLabels();
     void ResetRoleMenu();
 
+    void TryAppendLogoutAudit();
+    void ClearRoleSession();
+
     Ui::MainWindow *ui;
+    QString m_SessionLogin;
+    QString m_SessionRoleDb;
 };
 #endif // MAINWINDOW_H

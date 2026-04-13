@@ -5,6 +5,7 @@
 #include <QVector>
 
 #include "DataTypes/AccountUserRow.h"
+#include "DataTypes/AuditActionRow.h"
 #include "DataTypes/ConsumerGroupConsumptionRow.h"
 #include "DataTypes/ConsumerGroupRow.h"
 
@@ -24,6 +25,8 @@ public:
     void RequestTrySettingsAnonymous();
     void RequestTrySettingsWithUser();
     void RequestUsersList();
+    void RequestAuditLog(QDate DayFilter = QDate());
+    void RequestAppendAuditLog(const QString& Login, const QString& Action);
     void RequestConsumerGroupsList();
     void RequestConsumptionDataForGroupAndDate(int GroupId, const QDate& Date);
     void RequestForecastDataForDateAndHour(const QDate& Date, int Hour);
@@ -33,7 +36,7 @@ public:
     void RequestUpdateUser(const QString& Login, const QString& Name, const QString& Password);
     void RequestCreateUser(const QString& Login, const QString& Name, const QString& Role, const QString& PasswordHash);
     void RequestLoginVerify(const QString& Login, const QString& Password);
-    void RequestProcessCSV(const QString& FilePath);
+    void RequestProcessCSV(const QString& FilePath, const QString& AnalystLogin);
 
     ~DataManager() override;
 
@@ -47,6 +50,8 @@ signals:
     void OnTrySettingsAnonymousRequested();
     void OnTrySettingsWithUserRequested();
     void OnUsersListRequested();
+    void OnAuditLogRequested(QDate DayFilter);
+    void OnAppendAuditLogRequested(const QString& Login, const QString& Action);
     void OnConsumerGroupsListRequested();
     void OnConsumptionDataForGroupAndDateRequested(int GroupId, QDate Date);
     void OnForecastDataForDateAndHourRequested(QDate Date, int Hour);
@@ -56,7 +61,7 @@ signals:
     void OnUpdateUserRequested(const QString& Login, const QString& Name, const QString& Password);
     void OnCreateUserRequested(const QString& Login, const QString& Name, const QString& Role, const QString& PasswordHash);
     void OnLoginVerifyRequested(const QString& Login, const QString& Password);
-    void OnProcessCSVRequested(const QString& FilePath);
+    void OnProcessCSVRequested(const QString& FilePath, const QString& AnalystLogin);
 
     //  Output
     void OnLostConnection();
@@ -64,6 +69,8 @@ signals:
     void SettingsAnonymousResult(bool OpenUserDialog, bool ShowErrorLabel, const QString& ErrorLabelText);
     void SettingsUserResult(bool Success, bool UnknownDatabase, bool BadCredentials, const QString& UnknownDbMessage);
     void UsersListLoaded(const QVector<AccountUserRow>& Users);
+    void AuditLogAllLoaded(const QVector<AuditActionRow>& Rows);
+    void AuditLogForDayLoaded(const QVector<AuditActionRow>& Rows);
     void ConsumerGroupsLoaded(const QVector<ConsumerGroupRow>& Groups);
     void ConsumptionRowsLoaded(const QVector<ConsumerGroupConsumptionRow>& Rows);
     void ForecastRowsLoaded(const QVector<ConsumerGroupConsumptionRow>& Rows);

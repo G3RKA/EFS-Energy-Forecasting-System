@@ -35,7 +35,6 @@ void AppDataBase::GetAllUsers()
     QVector<AccountUserRow> Rows;
     QSqlDatabase Database;
     if (!GetOpenDatabase(Database)) {
-        emit UsersListLoaded(Rows);
         return;
     }
 
@@ -45,7 +44,6 @@ void AppDataBase::GetAllUsers()
 
     if (!Query.exec()) {
         qDebug() << "DataBase: не удалось загрузить пользователей:" << Query.lastError().text();
-        emit UsersListLoaded(Rows);
         return;
     }
 
@@ -59,6 +57,99 @@ void AppDataBase::GetAllUsers()
     }
     emit UsersListLoaded(Rows);
     return;
+}
+
+void AppDataBase::GetAuditLogRows(QDate DayFilter)
+{
+    QVector<AuditActionRow> Rows;
+    QSqlDatabase Database;
+    if (!GetOpenDatabase(Database)) {
+        return;
+    }
+
+    QString Sql = QString(
+                      "SELECT u.`Role`, u.`Name`, l.`Login`, l.`Action`, l.`Date`, l.`Time` "
+                      "FROM `%1` AS l "
+                      "LEFT JOIN `%2` AS u ON u.`Login` = l.`Login` ")
+                      .arg(AppConfig::DatabaseLogsTable, AppConfig::DatabaseUsersTable);
+    if (DayFilter.isValid()) {
+        Sql += "WHERE l.`Date` = :day ";
+    }
+    Sql += "ORDER BY l.`Date` DESC, l.`Time` DESC, l.`LogID` DESC, `LogID` DESC";
+
+    QSqlQuery Query(Database);
+    Query.prepare(Sql);
+    if (DayFilter.isValid()) {
+        Query.bindValue(":day", DayFilter);
+    }
+
+    if (!Query.exec()) {
+        qDebug() << "DataBase: не удалось загрузить журнал аудита:" << Query.lastError().text();
+        return;
+    }
+
+    while (Query.next()) {
+        AuditActionRow Row;
+        Row.UserRole = Query.value(0).toString();
+        Row.UserName = Query.value(1).toString();
+        Row.UserLogin = Query.value(2).toString();
+        Row.ActionDescription = Query.value(3).toString();
+        Row.ActionDate = Query.value(4).toDate();
+        Row.ActionTime = Query.value(5).toTime();
+        Rows.append(std::move(Row));
+    }
+    if (DayFilter.isValid()) {
+        emit AuditLogForDayLoaded(Rows);
+    } else {
+        emit AuditLogAllLoaded(Rows);
+    }
+}
+
+void AppDataBase::AppendAuditLogRow(const QString& Login, const QString& Action)
+{
+    if (Login.trimmed().isEmpty()) {
+        return;
+    }
+
+    QSqlDatabase Database;
+    if (!GetOpenDatabase(Database)) {
+        return;
+    }
+
+    const QDateTime Stamp = QDateTime::currentDateTime();
+
+    QSqlQuery Query(Database);
+    Query.prepare(QString("INSERT INTO `%1` (`Login`, `Action`, `Date`, `Time`) VALUES (:login, :action, :date, :time)")
+                      .arg(AppConfig::DatabaseLogsTable));
+    Query.bindValue(":login", Login.trimmed());
+    Query.bindValue(":action", Action);
+    Query.bindValue(":date", Stamp.date());
+    Query.bindValue(":time", Stamp.time());
+
+    if (!Query.exec()) {
+        qDebug() << "DataBase: не удалось записать аудит:" << Query.lastError().text();
+        return;
+    }
+
+    const int kAuditLogsMaxRows = 1000;
+
+    QSqlQuery CountQuery(Database);
+    CountQuery.prepare(QString("SELECT COUNT(*) FROM `%1`").arg(AppConfig::DatabaseLogsTable));
+    if (!CountQuery.exec() || !CountQuery.next()) {
+        return;
+    }
+    const int Total = CountQuery.value(0).toInt();
+    if (Total <= kAuditLogsMaxRows) {
+        return;
+    }
+    const int Excess = Total - kAuditLogsMaxRows;
+    QSqlQuery Del(Database);
+    const QString DelSql = QString("DELETE FROM `%1` ORDER BY `Date` ASC, `Time` ASC, `LogID` ASC LIMIT %2")
+                               .arg(AppConfig::DatabaseLogsTable)
+                               .arg(Excess);
+    if (!Del.exec(DelSql)) {
+        qDebug() << "DataBase: не удалось подрезать журнал аудита:" << Del.lastError().text();
+    }
 }
 
 void AppDataBase::GetAllConsumerGroups()
@@ -297,7 +388,8 @@ void AppDataBase::OnLoginVerifyRequested(const QString& Login, const QString& Pa
     emit LoginVerifyFinished(true, DbRole, DisplayName, false);
 }
 
-void AppDataBase::OnConsumeCSVImport(const QStringList& GroupNames, const QVector<ConsumerGroupConsumptionRow>& Rows)
+void AppDataBase::OnConsumeCSVImport(const QStringList& GroupNames, const QVector<ConsumerGroupConsumptionRow>& Rows,
+                                     const QString& AnalystLogin)
 {
     QSqlDatabase Database;
     if (!GetOpenDatabase(Database)) {
@@ -406,6 +498,10 @@ void AppDataBase::OnConsumeCSVImport(const QStringList& GroupNames, const QVecto
         Database.rollback();
         emit CSVConsumptionImportFinished(false, "0");
         return;
+    }
+
+    if (AppConfig::IsAuditAnalystUploadDataEnabled() && !AnalystLogin.trimmed().isEmpty()) {
+        AppendAuditLogRow(AnalystLogin.trimmed(), "Загрузка данных для прогнозирования");
     }
 
     emit CSVConsumptionImportFinished(true, QString());

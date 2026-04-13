@@ -173,7 +173,7 @@ QString AccountSettings::FormatLastVisit(const QVariant &Value)
         return "Неизвестно";
     const QDateTime Dt = Value.toDateTime();
     if (Dt.isValid())
-       return QLocale().toString(Dt, QLocale::ShortFormat);
+       return Dt.toString("dd.MM.yyyy HH:mm");
     return Value.toString();
 }
 

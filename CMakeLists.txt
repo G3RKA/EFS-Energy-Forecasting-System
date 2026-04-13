@@ -29,6 +29,7 @@ set(PROJECT_HEADERS
     ${CONFIG}/AppConfig.h
     ${MANAGER}/Worker/AppDataBase.h
     ${MANAGER}/Worker/CSVWorker.h
+    ${MANAGER}/Worker/ForecastWorker.h
     ${MANAGER}/DataManager.h
     ${MANAGER}/ForecastManager.h
     ${MANAGER}/LoginLockout.h
@@ -76,6 +77,7 @@ set(PROJECT_SOURCES
     ${CONFIG}/AppConfig.cpp
     ${MANAGER}/Worker/AppDataBase.cpp
     ${MANAGER}/Worker/CSVWorker.cpp
+    ${MANAGER}/Worker/ForecastWorker.cpp
     ${MANAGER}/DataManager.cpp
     ${MANAGER}/ForecastManager.cpp
     ${MANAGER}/LoginLockout.cpp

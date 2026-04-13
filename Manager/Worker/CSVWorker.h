@@ -15,11 +15,12 @@ public:
     explicit CSVWorker(QObject *Parent = nullptr);
 
 public slots:
-    void OnProcessCSVRequested(const QString& FilePath);
+    void OnProcessCSVRequested(const QString& FilePath, const QString& AnalystLogin);
 
 signals:
     void CSVProcessingFinished(bool Success, const QString& Message);
-    void CSVParsedForImport(const QStringList& GroupNames, const QVector<ConsumerGroupConsumptionRow>& Rows);
+    void CSVParsedForImport(const QStringList& GroupNames, const QVector<ConsumerGroupConsumptionRow>& Rows,
+                           const QString& AnalystLogin);
 
 private:
     QStringList SplitCSVLine(const QString& Line);

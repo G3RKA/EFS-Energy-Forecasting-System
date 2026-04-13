@@ -4,6 +4,7 @@
 #include <QDate>
 #include <QDialog>
 #include <QPointer>
+#include <QString>
 #include <QVector>
 
 #include <QMessageBox>
@@ -22,7 +23,7 @@ class DataMenu : public QDialog
     Q_OBJECT
 
 public:
-    explicit DataMenu(QWidget *Parent = nullptr);
+    explicit DataMenu(const QString& AnalystLogin, QWidget *Parent = nullptr);
     ~DataMenu();
 
 private slots:
@@ -42,6 +43,7 @@ private:
     void RefreshConsumptionTable();
 
     QPointer<QMessageBox> CSVWaitDialog;
+    QString m_AnalystLogin;
 };
 
 #endif // DATAMENU_H

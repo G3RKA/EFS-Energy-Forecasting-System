@@ -2,6 +2,7 @@
 #define APPCONFIG_H
 
 #include <QMap>
+#include <QString>
 #include <QSettings>
 
 class AppConfig
@@ -24,16 +25,39 @@ public:
     static const QString DatabaseConsumptionTable;
     static const QString DatabaseForecastTable;
 
+    static const QString LoginSecurityGroup;
+    static const QString LoginLockoutAttemptsKey;
+    static const QString LoginLockoutUntilMsKey;
+    static const qint64 LoginLockoutDurationMs;
+
+    static const QString ForecastGroup;
+    static const QString ForecastStatusKey;
+
+    static const QString AuditGroup;
+    static const QString AuditKeyAnalystDisableForecast;
+    static const QString AuditKeyAnalystEnableForecast;
+    static const QString AuditKeyAnalystUploadData;
+    static const QString AuditKeyAnalystChangeData;
+    static const QString AuditKeyAnalystLoginLogout;
+    static const QString AuditKeyEnergyLoginLogout;
+
     static bool IsSuperAdmin(const QString& Login);
     static bool CheckSAPassword(const QString& Login, const QString& Password);
     static QString GetSettingsPath();
     static QString ConvertRoleToDB(const QString& Role);
 
+    static bool IsForecastEnabled();
+    static QString ForecastStatusCaption();
+
+    static bool IsAuditAnalystLoginLogoutEnabled();
+    static bool IsAuditEnergyLoginLogoutEnabled();
+    static bool IsAuditAnalystEnableForecastEnabled();
+    static bool IsAuditAnalystDisableForecastEnabled();
+    static bool IsAuditAnalystUploadDataEnabled();
+    static bool IsAuditAnalystChangeDataEnabled();
+
     static QSettings LoginLockoutSettings();
-    static const QString LoginSecurityGroup;
-    static const QString LoginLockoutAttemptsKey;
-    static const QString LoginLockoutUntilMsKey;
-    static constexpr qint64 LoginLockoutDurationMs = 10LL * 60 * 1000;
+
 
 private:
     AppConfig() = default;

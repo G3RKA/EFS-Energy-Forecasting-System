@@ -13,7 +13,7 @@ CSVWorker::CSVWorker(QObject *Parent)
 {
 }
 
-void CSVWorker::OnProcessCSVRequested(const QString& FilePath)
+void CSVWorker::OnProcessCSVRequested(const QString& FilePath, const QString& AnalystLogin)
 {
     if (!FilePath.endsWith(".csv", Qt::CaseInsensitive)) {
         emit CSVProcessingFinished(false, "0");
@@ -95,7 +95,7 @@ void CSVWorker::OnProcessCSVRequested(const QString& FilePath)
         GroupNames.append(G);
     }
 
-    emit CSVParsedForImport(GroupNames, ImportRows);
+    emit CSVParsedForImport(GroupNames, ImportRows, AnalystLogin);
 }
 
 QStringList CSVWorker::SplitCSVLine(const QString& Line)

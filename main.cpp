@@ -5,6 +5,7 @@
 #include "DataTypes/ConsumerGroupRow.h"
 #include "DataTypes/ConsumerGroupTotalsRow.h"
 #include "Manager/DataManager.h"
+#include "Manager/ForecastManager.h"
 
 #include <QDate>
 #include <QFontDatabase>
@@ -44,6 +45,7 @@ int main(int argc, char *argv[])
     qRegisterMetaType<QDate>("QDate");
 
     DataManager::instance().Init();
+    ForecastManager::instance().Init();
     MainWindow W;
 
     QObject::connect(&DataManager::instance(), &DataManager::OnLostConnection, &W, &MainWindow::BackToAuthMenu);

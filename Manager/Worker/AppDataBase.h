@@ -8,6 +8,7 @@
 #include <qobject.h>
 
 #include "DataTypes/AccountUserRow.h"
+#include "DataTypes/AuditActionRow.h"
 #include "DataTypes/ConsumerGroupConsumptionRow.h"
 #include "DataTypes/ConsumerGroupRow.h"
 
@@ -25,6 +26,8 @@ public:
 
 public slots:
     void GetAllUsers();
+    void GetAuditLogRows(QDate DayFilter = QDate());
+    void AppendAuditLogRow(const QString& Login, const QString& Action);
     void GetAllConsumerGroups();
     void GetConsumptionDataForGroupAndDate(int GroupId, QDate Date);
     void GetForecastDataForDateAndHour(QDate Date, int Hour);
@@ -39,7 +42,8 @@ public slots:
     void OnUpdateConsumptionEntryRequested(int GroupId, QDate Date, int Hour, int ConsumerAmount, double Consumption);
 
     // From Worker CSV
-    void OnConsumeCSVImport(const QStringList& GroupNames, const QVector<ConsumerGroupConsumptionRow>& Rows);
+    void OnConsumeCSVImport(const QStringList& GroupNames, const QVector<ConsumerGroupConsumptionRow>& Rows,
+                           const QString& AnalystLogin);
 
 signals:
     void OnDataBaseStateSended(bool Connected);
@@ -47,6 +51,8 @@ signals:
     void SettingsAnonymousResult(bool OpenUserDialog, bool ShowErrorLabel, const QString& ErrorLabelText);
     void SettingsUserResult(bool Success, bool UnknownDatabase, bool BadCredentials, const QString& UnknownDbMessage);
     void UsersListLoaded(const QVector<AccountUserRow>& Users);
+    void AuditLogAllLoaded(const QVector<AuditActionRow>& Rows);
+    void AuditLogForDayLoaded(const QVector<AuditActionRow>& Rows);
     void ConsumerGroupsLoaded(const QVector<ConsumerGroupRow>& Groups);
     void ConsumptionRowsLoaded(const QVector<ConsumerGroupConsumptionRow>& Rows);
     void ForecastRowsLoaded(const QVector<ConsumerGroupConsumptionRow>& Rows);

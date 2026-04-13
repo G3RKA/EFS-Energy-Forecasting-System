@@ -32,6 +32,18 @@ const QString AppConfig::DatabasePasswordKey = "Password";
 const QString AppConfig::LoginSecurityGroup = "LoginSecurity";
 const QString AppConfig::LoginLockoutAttemptsKey = "failedAttempts";
 const QString AppConfig::LoginLockoutUntilMsKey = "lockoutUntilMs";
+const qint64 AppConfig::LoginLockoutDurationMs = 10LL * 60 * 1000;
+
+const QString AppConfig::ForecastGroup = "Forecast";
+const QString AppConfig::ForecastStatusKey = "ForecastStatus";
+
+const QString AppConfig::AuditGroup = "Audit";
+const QString AppConfig::AuditKeyAnalystDisableForecast = "AnalystDisableForecast";
+const QString AppConfig::AuditKeyAnalystEnableForecast = "AnalystEnableForecast";
+const QString AppConfig::AuditKeyAnalystUploadData = "AnalystUploadData";
+const QString AppConfig::AuditKeyAnalystChangeData = "AnalystChangeData";
+const QString AppConfig::AuditKeyAnalystLoginLogout = "AnalystLoginLogout";
+const QString AppConfig::AuditKeyEnergyLoginLogout = "EnergyLoginLogout";
 
 QSettings AppConfig::LoginLockoutSettings()
 {
@@ -60,6 +72,74 @@ QString AppConfig::GetSettingsPath()
     QString DataRoot = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
     QDir().mkpath(DataRoot);
     return QDir(DataRoot).filePath("Settings.ini");
+}
+
+bool AppConfig::IsForecastEnabled()
+{
+    QSettings Settings(GetSettingsPath(), QSettings::IniFormat);
+    Settings.beginGroup(ForecastGroup);
+        const bool On = Settings.value(ForecastStatusKey, 0).toInt() != 0;
+    Settings.endGroup();
+    return On;
+}
+
+QString AppConfig::ForecastStatusCaption()
+{
+    return IsForecastEnabled() ? "Включено" : "Выключено";
+}
+
+bool AppConfig::IsAuditAnalystLoginLogoutEnabled()
+{
+    QSettings Settings(GetSettingsPath(), QSettings::IniFormat);
+    Settings.beginGroup(AuditGroup);
+    const bool On = Settings.value(AuditKeyAnalystLoginLogout, 0).toInt() != 0;
+    Settings.endGroup();
+    return On;
+}
+
+bool AppConfig::IsAuditEnergyLoginLogoutEnabled()
+{
+    QSettings Settings(GetSettingsPath(), QSettings::IniFormat);
+    Settings.beginGroup(AuditGroup);
+    const bool On = Settings.value(AuditKeyEnergyLoginLogout, 0).toInt() != 0;
+    Settings.endGroup();
+    return On;
+}
+
+bool AppConfig::IsAuditAnalystEnableForecastEnabled()
+{
+    QSettings Settings(GetSettingsPath(), QSettings::IniFormat);
+    Settings.beginGroup(AuditGroup);
+    const bool On = Settings.value(AuditKeyAnalystEnableForecast, 0).toInt() != 0;
+    Settings.endGroup();
+    return On;
+}
+
+bool AppConfig::IsAuditAnalystDisableForecastEnabled()
+{
+    QSettings Settings(GetSettingsPath(), QSettings::IniFormat);
+    Settings.beginGroup(AuditGroup);
+    const bool On = Settings.value(AuditKeyAnalystDisableForecast, 0).toInt() != 0;
+    Settings.endGroup();
+    return On;
+}
+
+bool AppConfig::IsAuditAnalystUploadDataEnabled()
+{
+    QSettings Settings(GetSettingsPath(), QSettings::IniFormat);
+    Settings.beginGroup(AuditGroup);
+    const bool On = Settings.value(AuditKeyAnalystUploadData, 0).toInt() != 0;
+    Settings.endGroup();
+    return On;
+}
+
+bool AppConfig::IsAuditAnalystChangeDataEnabled()
+{
+    QSettings Settings(GetSettingsPath(), QSettings::IniFormat);
+    Settings.beginGroup(AuditGroup);
+    const bool On = Settings.value(AuditKeyAnalystChangeData, 0).toInt() != 0;
+    Settings.endGroup();
+    return On;
 }
 
 QString AppConfig::ConvertRoleToDB(const QString& Role)

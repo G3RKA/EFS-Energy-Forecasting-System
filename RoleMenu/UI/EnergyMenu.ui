@@ -177,30 +177,54 @@
         <property name="spacing">
          <number>0</number>
         </property>
-        <item alignment="Qt::AlignmentFlag::AlignRight">
-         <widget class="QLabel" name="SummaryLabel">
-          <property name="font">
-           <font>
-            <family>Merriweather</family>
-            <pointsize>14</pointsize>
-           </font>
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item alignment="Qt::AlignmentFlag::AlignHCenter">
+         <widget class="QFrame" name="frame">
+          <property name="frameShape">
+           <enum>QFrame::Shape::NoFrame</enum>
           </property>
-          <property name="text">
-           <string>Потребление: </string>
+          <property name="frameShadow">
+           <enum>QFrame::Shadow::Raised</enum>
           </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="label">
-          <property name="font">
-           <font>
-            <family>Merriweather</family>
-            <pointsize>14</pointsize>
-           </font>
-          </property>
-          <property name="text">
-           <string>XXX</string>
-          </property>
+          <layout class="QHBoxLayout" name="horizontalLayout_2">
+           <item>
+            <widget class="QLabel" name="SummaryLabel">
+             <property name="font">
+              <font>
+               <family>Merriweather</family>
+               <pointsize>14</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>Потребление: </string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="SummaryInfoText">
+             <property name="font">
+              <font>
+               <family>Merriweather</family>
+               <pointsize>14</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>0</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </widget>
         </item>
        </layout>
@@ -231,7 +255,7 @@
            </font>
           </property>
           <property name="text">
-           <string>*время*</string>
+           <string>-</string>
           </property>
          </widget>
         </item>

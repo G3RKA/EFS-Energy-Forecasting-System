@@ -327,8 +327,14 @@ QPushButton:pressed {
      </item>
      <item alignment="Qt::AlignmentFlag::AlignHCenter">
       <widget class="QFrame" name="TimeFrame">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="frameShape">
-        <enum>QFrame::Shape::Box</enum>
+        <enum>QFrame::Shape::NoFrame</enum>
        </property>
        <property name="lineWidth">
         <number>2</number>
@@ -340,7 +346,7 @@ QPushButton:pressed {
         <property name="rightMargin">
          <number>45</number>
         </property>
-        <item alignment="Qt::AlignmentFlag::AlignHCenter">
+        <item>
          <widget class="QLabel" name="TimeLabel">
           <property name="font">
            <font>
@@ -362,7 +368,7 @@ QPushButton:pressed {
            </font>
           </property>
           <property name="text">
-           <string>*время*</string>
+           <string>-</string>
           </property>
          </widget>
         </item>

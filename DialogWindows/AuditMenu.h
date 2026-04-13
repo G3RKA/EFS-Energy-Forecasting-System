@@ -2,6 +2,9 @@
 #define AUDITMENU_H
 
 #include <QDialog>
+#include <QVector>
+
+#include "DataTypes/AuditActionRow.h"
 
 namespace Ui {
 class AuditMenu;
@@ -18,7 +21,11 @@ public:
 private slots:
     void on_CloseButton_clicked();
 
+    void OnAuditLogForDayLoaded(const QVector<AuditActionRow>& Rows);
+
 private:
+    void FillAuditTable(const QVector<AuditActionRow>& Rows);
+
     Ui::AuditMenu *ui;
 };
 
