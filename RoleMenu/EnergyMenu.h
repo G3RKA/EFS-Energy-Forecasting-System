@@ -21,7 +21,6 @@ public:
 private slots:
     void FillForecastTable(const QVector<ConsumerGroupConsumptionRow>& Rows);
     void OnRemainingTimeToNextFullHour(qint64 remainingMs);
-    void OnForecastFullHourReached();
 
 private:
     void RefreshForecastStatusLabel();
